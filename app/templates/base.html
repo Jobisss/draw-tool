@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}draw-study{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+  <style>
+    .note-body { line-height: 1.7; }
+    .note-body h1 { font-size: 1.5rem; font-weight: 600; margin: 1rem 0 .5rem; }
+    .note-body h2 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 .5rem; }
+    .note-body h3 { font-size: 1.1rem; font-weight: 600; margin: .8rem 0 .4rem; }
+    .note-body p { margin: .6rem 0; }
+    .note-body ul { list-style: disc; margin: .6rem 0 .6rem 1.4rem; }
+    .note-body ol { list-style: decimal; margin: .6rem 0 .6rem 1.4rem; }
+    .note-body a { color: #d97706; text-decoration: underline; }
+    .note-body a.missing { color: #dc2626; }
+    .note-body code { background: #f3f4f6; padding: .1rem .3rem; border-radius: .25rem; font-size: .85em; }
+    .note-body pre { background: #f3f4f6; padding: .8rem; border-radius: .4rem; overflow-x: auto; margin: .6rem 0; }
+    .note-body pre code { background: none; padding: 0; }
+    .note-body img { max-width: 100%; border-radius: .4rem; margin: .6rem 0; }
+    .note-body blockquote { border-left: 3px solid #d4d4d4; padding-left: .8rem; color: #6b7280; margin: .6rem 0; }
+    .note-body table { border-collapse: collapse; margin: .6rem 0; }
+    .note-body th, .note-body td { border: 1px solid #d4d4d4; padding: .3rem .6rem; }
+  </style>
+</head>
+<body class="h-full bg-neutral-50 text-neutral-900 antialiased">
+  <div class="flex min-h-full">
+    <aside class="w-56 shrink-0 border-r border-neutral-200 p-4">
+      <a href="/" class="block text-lg font-semibold mb-6">✏️ draw-study</a>
+      <nav class="space-y-1 text-sm">
+        <a href="/dashboard" class="block rounded px-3 py-2 hover:bg-neutral-100">Dashboard</a>
+        <a href="/" class="block rounded px-3 py-2 hover:bg-neutral-100">Biblioteca</a>
+        <a href="/collections" class="block rounded px-3 py-2 hover:bg-neutral-100">Coleções</a>
+        <a href="/notes" class="block rounded px-3 py-2 hover:bg-neutral-100">Notas</a>
+        <a href="/graph" class="block rounded px-3 py-2 hover:bg-neutral-100">Grafo</a>
+        <a href="/planner" class="block rounded px-3 py-2 hover:bg-neutral-100">Planner</a>
+        <a href="/timeline" class="block rounded px-3 py-2 hover:bg-neutral-100">Timeline</a>
+        <a href="/practice" class="block rounded px-3 py-2 hover:bg-neutral-100">Praticar</a>
+        <a href="/report" class="block rounded px-3 py-2 hover:bg-neutral-100">Relatório</a>
+        <a href="/settings" class="block rounded px-3 py-2 hover:bg-neutral-100">Configurações</a>
+      </nav>
+      <p class="mt-8 text-xs text-neutral-500">localhost · single-user</p>
+    </aside>
+    <main class="flex-1 p-8 max-w-5xl">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

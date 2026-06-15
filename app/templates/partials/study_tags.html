@@ -1,0 +1,23 @@
+<div id="study-tags">
+  <div class="flex flex-wrap gap-1.5 mb-3">
+    {% for t in tags %}
+    <span class="inline-flex items-center gap-1 rounded-full border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700">
+      <span class="text-neutral-500">{{ t.category }}:</span>{{ t.name }}
+      <button hx-post="/study/{{ s.id }}/tags/{{ t.id }}/remove"
+              hx-target="#study-tags" hx-swap="outerHTML"
+              class="text-neutral-500 hover:text-red-600" title="remover">×</button>
+    </span>
+    {% else %}
+    <span class="text-xs text-neutral-400">Sem tags.</span>
+    {% endfor %}
+  </div>
+  <form hx-post="/study/{{ s.id }}/tags" hx-target="#study-tags" hx-swap="outerHTML"
+        hx-on::after-request="this.reset()" class="flex gap-1.5">
+    <input name="name" placeholder="nova tag" required
+           class="flex-1 rounded border border-neutral-300 bg-neutral-50 px-2 py-1 text-xs focus:border-amber-500 focus:outline-none">
+    <select name="category" class="rounded border border-neutral-300 bg-neutral-50 px-1 py-1 text-xs">
+      {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+    </select>
+    <button class="rounded bg-neutral-200 px-2 py-1 text-xs hover:bg-neutral-300">+</button>
+  </form>
+</div>

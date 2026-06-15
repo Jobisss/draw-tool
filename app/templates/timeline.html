@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Timeline · draw-study{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-6">Timeline</h1>
+
+<!-- antes/depois por técnica (RF20) -->
+<section class="mb-8">
+  <h2 class="font-medium mb-2">Evolução por técnica</h2>
+  <form method="get" action="/timeline" class="flex gap-2 mb-3">
+    <select name="tech" onchange="this.form.submit()"
+            class="rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm">
+      <option value="">escolha uma técnica…</option>
+      {% for t in technique_tags %}<option value="{{ t.id }}" {{ 'selected' if tech==t.id }}>{{ t.name }}</option>{% endfor %}
+    </select>
+  </form>
+  {% if tech %}
+    {% if evolution %}
+    <div class="flex gap-3 overflow-x-auto pb-2">
+      {% for s in evolution %}
+      <a href="/study/{{ s.id }}" class="shrink-0 text-center">
+        {% if s.thumb_path %}<img src="/thumb/{{ s.id }}" class="h-32 w-32 rounded object-cover border border-neutral-300">
+        {% else %}<span class="flex h-32 w-32 items-center justify-center rounded border border-neutral-300 text-xs text-neutral-500">sem preview</span>{% endif %}
+        <p class="text-[10px] text-neutral-500 mt-1">{{ s.created_at[:10] }}</p>
+      </a>
+      {% endfor %}
+    </div>
+    <p class="text-xs text-neutral-400 mt-1">← mais antigo · mais novo →</p>
+    {% else %}
+    <p class="text-sm text-neutral-400">Nenhum estudo com essa técnica.</p>
+    {% endif %}
+  {% endif %}
+  {% if not technique_tags %}
+  <p class="text-sm text-neutral-400">Marque estudos com tags de categoria <code>tecnica</code> p/ comparar evolução.</p>
+  {% endif %}
+</section>
+
+<!-- timeline cronológica (RF19) -->
+<section>
+  <h2 class="font-medium mb-3">Estudos por mês</h2>
+  {% for g in groups %}
+  <div class="mb-6">
+    <h3 class="text-sm font-medium text-amber-600 mb-2">{{ g.label }} <span class="text-neutral-400">({{ g.items|length }})</span></h3>
+    <div class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-8 gap-2">
+      {% for s in g.items %}
+      <a href="/study/{{ s.id }}" class="block rounded border border-neutral-200 overflow-hidden hover:border-amber-600">
+        <div class="aspect-square bg-neutral-50 flex items-center justify-center">
+          {% if s.thumb_path %}<img src="/thumb/{{ s.id }}" loading="lazy" class="w-full h-full object-cover">
+          {% else %}<span class="text-[10px] uppercase text-neutral-400">{{ s.format }}</span>{% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <p class="text-sm text-neutral-400">Nenhum estudo indexado.</p>
+  {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+# dados do app (DB + thumbnails cache) — isolados do vault (RNF08)
+/data/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.uv/
+
+# node / tauri (v2)
+node_modules/
+tauri/node_modules/
+tauri/dist/
+tauri/src-tauri/target/
+tauri/src-tauri/gen/
+
+# editores
+.vscode/
+.idea/
+.DS_Store

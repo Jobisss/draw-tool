@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Biblioteca · draw-study{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-2xl font-semibold">
+    {% if col_name %}Coleção: {{ col_name }}{% else %}Biblioteca{% endif %}
+    <span class="text-neutral-500 text-base">({{ total }})</span>
+  </h1>
+  {% if vault %}
+  <div class="flex items-center gap-2">
+    <span id="scan-spin" class="htmx-indicator text-sm text-amber-600">indexando…</span>
+    <button hx-post="/rescan" hx-target="#gallery" hx-swap="innerHTML" hx-indicator="#scan-spin"
+            class="rounded bg-amber-600 px-4 py-2 text-sm font-medium text-black hover:bg-amber-500">
+      Re-scan
+    </button>
+  </div>
+  {% endif %}
+</div>
+
+{% if not vault %}
+  <div class="rounded border border-amber-300 bg-amber-50 p-4 mt-4">
+    <p class="text-amber-800">Nenhum vault configurado ainda.</p>
+    <a href="/settings" class="inline-block mt-3 rounded bg-amber-600 px-4 py-2 text-sm font-medium text-black hover:bg-amber-500">Configurar vault →</a>
+  </div>
+{% else %}
+  <!-- filtros (RF08) -->
+  <form class="flex flex-wrap items-center gap-2 mb-4"
+        hx-get="/" hx-target="#gallery" hx-swap="innerHTML"
+        hx-trigger="input changed delay:300ms from:input[name=q], change">
+    <input type="search" name="q" value="{{ q }}" placeholder="Buscar nome / nota…"
+           class="flex-1 min-w-[200px] rounded border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none">
+    <select name="fmt" class="rounded border border-neutral-300 bg-neutral-50 px-2 py-2 text-sm">
+      <option value="">todos formatos</option>
+      {% for f in formats %}<option value="{{ f }}" {{ 'selected' if fmt==f }}>{{ f }}</option>{% endfor %}
+    </select>
+    <input type="hidden" name="tag" value="{{ tag or '' }}">
+    <input type="hidden" name="collection" value="{{ collection or '' }}">
+    {% if q or fmt or tag or collection %}
+      <a href="/" class="text-xs text-neutral-600 hover:text-neutral-800 underline">limpar</a>
+    {% endif %}
+  </form>
+
+  {% if all_tags %}
+  <div class="flex flex-wrap gap-1.5 mb-4">
+    {% for t in all_tags %}
+    <a href="/?tag={{ t.id }}"
+       class="rounded-full border px-2.5 py-0.5 text-xs {{ 'border-amber-500 text-amber-700' if tag==t.id else 'border-neutral-300 text-neutral-600 hover:border-neutral-400' }}">
+      {{ t.name }} <span class="text-neutral-400">{{ t.n }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div id="gallery">
+    {% include "partials/gallery.html" %}
+  </div>
+{% endif %}
+{% endblock %}

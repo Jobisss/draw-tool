@@ -1,0 +1,25 @@
+<div id="study-collections">
+  <div class="flex flex-wrap gap-1.5 mb-3">
+    {% for c in study_collections %}
+    <span class="inline-flex items-center gap-1 rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700">
+      <a href="/?collection={{ c.id }}" class="hover:text-amber-700">{{ c.name }}</a>
+      <button hx-post="/study/{{ s.id }}/collections/{{ c.id }}/remove"
+              hx-target="#study-collections" hx-swap="outerHTML"
+              class="text-neutral-500 hover:text-red-600" title="remover">×</button>
+    </span>
+    {% else %}
+    <span class="text-xs text-neutral-400">Em nenhuma coleção.</span>
+    {% endfor %}
+  </div>
+  {% if all_collections %}
+  <form hx-post="/study/{{ s.id }}/collections" hx-target="#study-collections" hx-swap="outerHTML"
+        class="flex gap-1.5">
+    <select name="collection_id" class="flex-1 rounded border border-neutral-300 bg-neutral-50 px-2 py-1 text-xs">
+      {% for c in all_collections %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+    </select>
+    <button class="rounded bg-neutral-200 px-2 py-1 text-xs hover:bg-neutral-300">adicionar</button>
+  </form>
+  {% else %}
+  <p class="text-xs text-neutral-400">Crie coleções na aba <a href="/collections" class="underline">Coleções</a>.</p>
+  {% endif %}
+</div>

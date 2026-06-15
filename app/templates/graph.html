@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Grafo · draw-study{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-2">Grafo de notas</h1>
+<p class="text-sm text-neutral-500 mb-4">Nós = notas · arestas = wikilinks <code>[[...]]</code>. Clique p/ abrir.</p>
+
+<div id="graph" class="rounded border border-neutral-200 bg-neutral-50" style="height:75vh"></div>
+
+<script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+<script>
+fetch('/graph.json').then(r => r.json()).then(data => {
+  const el = document.getElementById('graph');
+  if (!data.nodes.length) { el.innerHTML = '<p style="padding:2rem;color:#737373">Sem notas ainda. Crie notas e use [[links]].</p>'; return; }
+  const nodes = new vis.DataSet(data.nodes.map(n => ({
+    id: n.id, label: n.label,
+    color: n.group === 'study' ? '#d97706' : '#3b82f6'
+  })));
+  const edges = new vis.DataSet(data.edges.map(e => ({ from: e.from, to: e.to, arrows: 'to' })));
+  const net = new vis.Network(el, { nodes, edges }, {
+    nodes: { shape: 'dot', size: 14, font: { color: '#404040' } },
+    edges: { color: '#525252', smooth: true },
+    physics: { stabilization: true }
+  });
+  net.on('click', p => { if (p.nodes.length) location.href = '/note/' + p.nodes[0]; });
+});
+</script>
+{% endblock %}

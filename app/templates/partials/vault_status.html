@@ -1,0 +1,13 @@
+<div id="vault-status" class="mt-4 text-sm">
+  {% if msg %}
+    {% if msg[0] == 'ok' %}
+      <p class="rounded bg-green-50 border border-green-300 px-3 py-2 text-green-700">✓ {{ msg[1] }}</p>
+    {% else %}
+      <p class="rounded bg-red-50 border border-red-300 px-3 py-2 text-red-700">✗ {{ msg[1] }}</p>
+    {% endif %}
+  {% elif vault %}
+    <p class="text-neutral-600">Vault atual: <code class="text-neutral-800">{{ vault }}</code></p>
+  {% else %}
+    <p class="text-neutral-500">Nenhum vault configurado.</p>
+  {% endif %}
+</div>

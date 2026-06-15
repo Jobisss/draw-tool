@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ note.title }} · draw-study{% endblock %}
+{% block content %}
+<a href="/notes" class="text-sm text-neutral-600 hover:text-neutral-800">← Notas</a>
+
+<div class="mt-4 max-w-3xl">
+  {% if edit %}
+  <form method="post" action="/note/{{ note.id }}" class="space-y-2">
+    <input name="title" value="{{ note.title }}" required
+           class="w-full rounded border border-neutral-300 bg-neutral-50 px-3 py-2 text-lg font-semibold focus:border-amber-500 focus:outline-none">
+    <textarea name="body" rows="18"
+              class="w-full rounded border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm font-mono focus:border-amber-500 focus:outline-none">{{ note.body_md }}</textarea>
+    <div class="flex gap-2">
+      <button class="rounded bg-amber-600 px-4 py-2 text-sm font-medium text-black hover:bg-amber-500">Salvar</button>
+      <a href="/note/{{ note.id }}" class="rounded border border-neutral-300 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">Cancelar</a>
+    </div>
+  </form>
+  {% else %}
+  <div class="flex items-start justify-between gap-4">
+    <h1 class="text-2xl font-semibold">{{ note.title }}</h1>
+    <div class="flex gap-2 shrink-0">
+      <a href="/note/{{ note.id }}?edit=1" class="rounded border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-100">Editar</a>
+      <form method="post" action="/note/{{ note.id }}/delete"
+            onsubmit="return confirm('Apagar esta nota?')">
+        <button class="rounded border border-red-300 px-3 py-1.5 text-sm text-red-600 hover:bg-red-950/40">Apagar</button>
+      </form>
+    </div>
+  </div>
+
+  {% if study %}
+  <p class="text-sm text-neutral-500 mt-1">↳ <a href="/study/{{ study.id }}" class="hover:text-amber-700">{{ study.title or study.filename }}</a></p>
+  {% endif %}
+
+  <div class="note-body mt-4 text-neutral-800">{{ html | safe }}</div>
+
+  {% if backlinks %}
+  <div class="mt-8 pt-4 border-t border-neutral-200">
+    <h2 class="text-sm font-medium text-neutral-600 mb-2">Backlinks ({{ backlinks|length }})</h2>
+    <ul class="space-y-1">
+      {% for b in backlinks %}
+      <li><a href="/note/{{ b.id }}" class="text-sm text-amber-600 hover:underline">← {{ b.title }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

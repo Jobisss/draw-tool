@@ -1,0 +1,29 @@
+<div id="study-references">
+  <div class="grid grid-cols-3 gap-1.5 mb-3">
+    {% for r in references %}
+    <div class="relative group">
+      <a href="{{ r.url }}" target="_blank">
+        <img src="{{ r.url }}" alt="{{ r.caption }}" class="h-16 w-full rounded object-cover border border-neutral-300"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'flex h-16 items-center justify-center rounded border border-neutral-300 text-[10px] text-neutral-500',textContent:'link'}))">
+      </a>
+      <form method="post" action="/study/{{ s.id }}/references/{{ r.id }}/remove"
+            hx-post="/study/{{ s.id }}/references/{{ r.id }}/remove" hx-target="#study-references" hx-swap="outerHTML"
+            class="absolute -top-1 -right-1">
+        <button type="button" onclick="this.closest('form').requestSubmit()" class="rounded-full bg-neutral-100 px-1 text-xs text-neutral-600 hover:text-red-600">×</button>
+      </form>
+    </div>
+    {% else %}
+    <p class="col-span-3 text-xs text-neutral-400">Sem referências.</p>
+    {% endfor %}
+  </div>
+  <form hx-post="/study/{{ s.id }}/references" hx-target="#study-references" hx-swap="outerHTML"
+        hx-on::after-request="this.reset()" class="space-y-1.5">
+    <input name="url" placeholder="URL da imagem de referência" required
+           class="w-full rounded border border-neutral-300 bg-neutral-50 px-2 py-1 text-xs focus:border-amber-500 focus:outline-none">
+    <div class="flex gap-1.5">
+      <input name="caption" placeholder="legenda (opcional)"
+             class="flex-1 rounded border border-neutral-300 bg-neutral-50 px-2 py-1 text-xs focus:border-amber-500 focus:outline-none">
+      <button class="rounded bg-neutral-200 px-2 py-1 text-xs hover:bg-neutral-300">+ ref</button>
+    </div>
+  </form>
+</div>

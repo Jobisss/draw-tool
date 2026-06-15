@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · draw-study{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-6">Dashboard</h1>
+
+<!-- cards (RF21) -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+  {% set cards = [
+    ('Estudos', stats.studies), ('Notas', stats.notes),
+    ('Sessões', stats.sessions), ('Concluídas', stats.sessions_done),
+    ('Horas', stats.hours), ('Streak (dias)', stats.streak)
+  ] %}
+  {% for label, val in cards %}
+  <div class="rounded border border-neutral-200 bg-white p-4">
+    <p class="text-2xl font-semibold text-amber-600">{{ val }}</p>
+    <p class="text-xs text-neutral-500">{{ label }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- heatmap (RF22) -->
+<section class="mb-8">
+  <h2 class="font-medium mb-3">Prática (últimas 53 semanas)</h2>
+  {% set colors = ['bg-neutral-100','bg-amber-900','bg-amber-700','bg-amber-500','bg-amber-300'] %}
+  <div class="flex gap-[3px] overflow-x-auto pb-2">
+    {% for col in heatmap %}
+    <div class="flex flex-col gap-[3px]">
+      {% for d in col %}
+      <div class="h-3 w-3 rounded-sm {{ 'opacity-0' if d.future else colors[d.level] }}"
+           title="{{ d.date }}: {{ d.n }} sessão(ões)"></div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="flex items-center gap-1 mt-2 text-xs text-neutral-500">
+    menos
+    {% for c in colors %}<span class="h-3 w-3 rounded-sm {{ c }}"></span>{% endfor %}
+    mais
+  </div>
+</section>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <!-- por formato -->
+  <section>
+    <h2 class="font-medium mb-3">Estudos por formato</h2>
+    {% set maxf = (by_format | map(attribute='n') | max) if by_format else 1 %}
+    <ul class="space-y-2">
+      {% for f in by_format %}
+      <li>
+        <div class="flex justify-between text-sm text-neutral-700"><span>{{ f.format }}</span><span>{{ f.n }}</span></div>
+        <div class="h-2 rounded bg-neutral-100 overflow-hidden"><div class="h-full bg-amber-500" style="width: {{ (100 * f.n / maxf) | round }}%"></div></div>
+      </li>
+      {% else %}<li class="text-sm text-neutral-400">Sem estudos.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <!-- por técnica (sessões) -->
+  <section>
+    <h2 class="font-medium mb-3">Sessões por técnica</h2>
+    {% set maxt = (by_technique | map(attribute='n') | max) if by_technique else 1 %}
+    <ul class="space-y-2">
+      {% for t in by_technique %}
+      <li>
+        <div class="flex justify-between text-sm text-neutral-700"><span>{{ t.technique }}</span><span>{{ t.n }} · {{ t.minutes }}min</span></div>
+        <div class="h-2 rounded bg-neutral-100 overflow-hidden"><div class="h-full bg-amber-500" style="width: {{ (100 * t.n / maxt) | round }}%"></div></div>
+      </li>
+      {% else %}<li class="text-sm text-neutral-400">Sem sessões.</li>{% endfor %}
+    </ul>
+  </section>
+</div>
+{% endblock %}

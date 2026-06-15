@@ -1,0 +1,17 @@
+<div id="study-notes">
+  <ul class="space-y-1 mb-3">
+    {% for n in notes %}
+    <li><a href="/note/{{ n.id }}" class="text-sm text-amber-600 hover:underline">{{ n.title }}</a></li>
+    {% else %}
+    <li class="text-xs text-neutral-400">Sem notas.</li>
+    {% endfor %}
+  </ul>
+  <form hx-post="/study/{{ s.id }}/notes" hx-target="#study-notes" hx-swap="outerHTML"
+        hx-on::after-request="this.reset()" class="space-y-1.5">
+    <input name="title" placeholder="título da nota" required
+           class="w-full rounded border border-neutral-300 bg-neutral-50 px-2 py-1 text-xs focus:border-amber-500 focus:outline-none">
+    <textarea name="body" rows="2" placeholder="markdown… [[link]]"
+              class="w-full rounded border border-neutral-300 bg-neutral-50 px-2 py-1 text-xs font-mono focus:border-amber-500 focus:outline-none"></textarea>
+    <button class="rounded bg-neutral-200 px-2 py-1 text-xs hover:bg-neutral-300">+ nota</button>
+  </form>
+</div>

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Relatório · draw-study{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-4 no-print">
+  <h1 class="text-2xl font-semibold">Relatório de progresso</h1>
+  <button onclick="window.print()" class="rounded bg-amber-600 px-4 py-2 text-sm font-medium text-black hover:bg-amber-500">Imprimir / PDF</button>
+</div>
+
+<form method="get" action="/report" class="flex flex-wrap gap-3 items-end mb-6 no-print">
+  <label class="text-sm">Início
+    <input type="date" name="start" value="{{ start }}" class="block mt-1 rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm">
+  </label>
+  <label class="text-sm">Fim
+    <input type="date" name="end" value="{{ end }}" class="block mt-1 rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm">
+  </label>
+  <button class="rounded border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-100">Gerar</button>
+</form>
+
+<div class="report-body">
+  <p class="text-neutral-600 mb-4">Período: <strong>{{ start }}</strong> a <strong>{{ end }}</strong></p>
+
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+    {% for label, val in [('Sessões', n_sessions), ('Horas', hours), ('Estudos novos', n_studies), ('Minutos', minutes)] %}
+    <div class="rounded border border-neutral-200 bg-white p-4">
+      <p class="text-2xl font-semibold text-amber-600">{{ val }}</p>
+      <p class="text-xs text-neutral-500">{{ label }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h2 class="font-medium mb-2">Por técnica</h2>
+  <table class="w-full text-sm mb-6">
+    <thead><tr class="text-left text-neutral-500 border-b border-neutral-200"><th class="py-1">Técnica</th><th>Sessões</th><th>Minutos</th></tr></thead>
+    <tbody>
+      {% for t in by_tech %}
+      <tr class="border-b border-neutral-100"><td class="py-1">{{ t.technique }}</td><td>{{ t.n }}</td><td>{{ t.minutes }}</td></tr>
+      {% else %}<tr><td colspan="3" class="py-1 text-neutral-400">Sem sessões no período.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+
+  <h2 class="font-medium mb-2">Estudos no período ({{ n_studies }})</h2>
+  <div class="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-6">
+    {% for s in studies %}
+    <a href="/study/{{ s.id }}" class="block rounded border border-neutral-200 overflow-hidden">
+      <div class="aspect-square bg-neutral-50 flex items-center justify-center">
+        {% if s.thumb_path %}<img src="/thumb/{{ s.id }}" class="w-full h-full object-cover">{% else %}<span class="text-[10px] text-neutral-400">{{ s.title }}</span>{% endif %}
+      </div>
+    </a>
+    {% else %}<p class="text-sm text-neutral-400">Nenhum estudo novo.</p>{% endfor %}
+  </div>
+
+  {% if goals %}
+  <h2 class="font-medium mb-2">Metas</h2>
+  <ul class="text-sm space-y-1">
+    {% for g in goals %}<li>{{ g.description }} — {{ g.progress }}{% if g.target_count %}/{{ g.target_count }}{% endif %} ({{ g.period }})</li>{% endfor %}
+  </ul>
+  {% endif %}
+</div>
+
+<style>
+@media print {
+  .no-print, aside { display: none !important; }
+  main { max-width: none !important; padding: 0 !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .report-body .rounded, table, th, td { color: #000 !important; }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Planner · draw-study{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-6">Planner</h1>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+  <!-- PLANOS (RF15) -->
+  <section>
+    <h2 class="font-medium mb-3">Planos de estudo</h2>
+    <form method="post" action="/plans" class="space-y-1.5 mb-4">
+      <input name="title" placeholder="título" required class="w-full rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none">
+      <input name="technique" placeholder="técnica-alvo" class="w-full rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none">
+      <input name="goal" placeholder="objetivo" class="w-full rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none">
+      <label class="block text-xs text-neutral-500">prazo
+        <input type="date" name="deadline" class="w-full rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none">
+      </label>
+      <button class="rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-black hover:bg-amber-500">+ plano</button>
+    </form>
+    <ul class="space-y-2">
+      {% for p in plans %}
+      <li class="rounded border border-neutral-200 bg-white p-3">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <p class="font-medium text-neutral-800">{{ p.title }}</p>
+            {% if p.technique %}<p class="text-xs text-neutral-600">{{ p.technique }}</p>{% endif %}
+            <p class="text-xs text-neutral-500">{{ p.n_sessions }} sessão(ões){% if p.deadline %} · prazo {{ p.deadline }}{% endif %}</p>
+          </div>
+          <form method="post" action="/plan/{{ p.id }}/delete" onsubmit="return confirm('Apagar plano?')">
+            <button class="text-neutral-500 hover:text-red-600 text-sm">×</button>
+          </form>
+        </div>
+      </li>
+      {% else %}<li class="text-sm text-neutral-400">Nenhum plano.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <!-- SESSÕES (RF16/18) -->
+  <section>
+    <h2 class="font-medium mb-3">Sessões</h2>
+    <form method="post" action="/sessions" class="space-y-1.5 mb-4">
+      <label class="block text-xs text-neutral-500">data
+        <input type="date" name="date" required class="w-full rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none">
+      </label>
+      <div class="flex gap-1.5">
+        <input name="technique" placeholder="técnica" class="flex-1 rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none">
+        <input type="number" name="duration_min" placeholder="min" min="1" class="w-20 rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none">
+      </div>
+      <select name="plan_id" class="w-full rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm">
+        <option value="">sem plano</option>
+        {% for p in plans %}<option value="{{ p.id }}">{{ p.title }}</option>{% endfor %}
+      </select>
+      <button class="rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-black hover:bg-amber-500">+ sessão</button>
+    </form>
+
+    <datalist id="studies-dl">
+      {% for s in studies %}<option value="{{ s.id }}">{{ s.filename }}</option>{% endfor %}
+    </datalist>
+
+    <ul class="space-y-2">
+      {% for s in sessions %}
+      <li class="rounded border {{ 'border-green-300' if s.done else 'border-neutral-200' }} bg-white p-3">
+        <div class="flex items-start justify-between gap-2">
+          <div>
+            <p class="text-sm text-neutral-800">{{ s.date }}{% if s.technique %} · {{ s.technique }}{% endif %}{% if s.duration_min %} · {{ s.duration_min }}min{% endif %}</p>
+          </div>
+          <div class="flex gap-1.5 shrink-0">
+            <form method="post" action="/session/{{ s.id }}/done">
+              <button class="rounded px-2 py-0.5 text-xs {{ 'bg-green-700 text-white' if s.done else 'border border-neutral-300 text-neutral-700 hover:bg-neutral-100' }}">{{ '✓ feito' if s.done else 'concluir' }}</button>
+            </form>
+            <form method="post" action="/session/{{ s.id }}/delete" onsubmit="return confirm('Apagar sessão?')">
+              <button class="text-neutral-500 hover:text-red-600 text-sm">×</button>
+            </form>
+          </div>
+        </div>
+        <!-- estudos produzidos (RF18) -->
+        {% set linked = studies_by_session[s.id] %}
+        {% if linked %}
+        <div class="flex flex-wrap gap-1.5 mt-2">
+          {% for st in linked %}
+          <span class="relative group">
+            <a href="/study/{{ st.id }}">
+              {% if st.thumb_path %}<img src="/thumb/{{ st.id }}" class="h-12 w-12 rounded object-cover border border-neutral-300">
+              {% else %}<span class="flex h-12 w-12 items-center justify-center rounded border border-neutral-300 text-[10px] text-neutral-500">{{ st.id }}</span>{% endif %}
+            </a>
+            <form method="post" action="/session/{{ s.id }}/studies/{{ st.id }}/remove" class="absolute -top-1 -right-1">
+              <button class="rounded-full bg-neutral-100 px-1 text-xs text-neutral-600 hover:text-red-600">×</button>
+            </form>
+          </span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <form method="post" action="/session/{{ s.id }}/studies" class="flex gap-1.5 mt-2">
+          <input name="study_id" list="studies-dl" placeholder="id do estudo" required class="flex-1 rounded border border-neutral-300 bg-neutral-50 px-2 py-1 text-xs focus:border-amber-500 focus:outline-none">
+          <button class="rounded bg-neutral-200 px-2 py-1 text-xs hover:bg-neutral-300">vincular</button>
+        </form>
+      </li>
+      {% else %}<li class="text-sm text-neutral-400">Nenhuma sessão.</li>{% endfor %}
+    </ul>
+  </section>
+
+  <!-- METAS (RF17) -->
+  <section>
+    <h2 class="font-medium mb-3">Metas</h2>
+    <form method="post" action="/goals" class="space-y-1.5 mb-4">
+      <input name="description" placeholder="ex: 30 gestures" required class="w-full rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none">
+      <div class="flex gap-1.5">
+        <input type="number" name="target_count" placeholder="alvo" min="1" class="w-20 rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none">
+        <select name="period" class="flex-1 rounded border border-neutral-300 bg-neutral-50 px-2 py-1.5 text-sm">
+          <option value="diario">diário</option>
+          <option value="semanal" selected>semanal</option>
+          <option value="mensal">mensal</option>
+        </select>
+      </div>
+      <button class="rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-black hover:bg-amber-500">+ meta</button>
+    </form>
+    <ul class="space-y-2">
+      {% for g in goals %}
+      <li class="rounded border border-neutral-200 bg-white p-3">
+        <div class="flex items-start justify-between gap-2">
+          <p class="text-sm text-neutral-800">{{ g.description }} <span class="text-xs text-neutral-500">({{ g.period }})</span></p>
+          <form method="post" action="/goal/{{ g.id }}/delete" onsubmit="return confirm('Apagar meta?')">
+            <button class="text-neutral-500 hover:text-red-600 text-sm">×</button>
+          </form>
+        </div>
+        {% if g.target_count %}
+        <div class="mt-2 h-2 rounded bg-neutral-100 overflow-hidden">
+          <div class="h-full bg-amber-500" style="width: {{ (100 * g.progress / g.target_count) | round if g.target_count else 0 }}%"></div>
+        </div>
+        <p class="text-xs text-neutral-600 mt-1">{{ g.progress }} / {{ g.target_count }}</p>
+        {% else %}
+        <p class="text-xs text-neutral-600 mt-1">{{ g.progress }} feito(s)</p>
+        {% endif %}
+        <div class="flex gap-1.5 mt-1">
+          <form method="post" action="/goal/{{ g.id }}/inc"><input type="hidden" name="delta" value="1"><button class="rounded border border-neutral-300 px-2 py-0.5 text-xs hover:bg-neutral-100">+1</button></form>
+          <form method="post" action="/goal/{{ g.id }}/inc"><input type="hidden" name="delta" value="-1"><button class="rounded border border-neutral-300 px-2 py-0.5 text-xs hover:bg-neutral-100">−1</button></form>
+        </div>
+      </li>
+      {% else %}<li class="text-sm text-neutral-400">Nenhuma meta.</li>{% endfor %}
+    </ul>
+  </section>
+
+</div>
+{% endblock %}

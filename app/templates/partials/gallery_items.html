@@ -1,0 +1,24 @@
+{% for it in items %}
+<a href="/study/{{ it.id }}"
+   class="group block rounded border border-neutral-200 bg-white overflow-hidden hover:border-amber-600">
+  <div class="aspect-square bg-neutral-50 flex items-center justify-center overflow-hidden">
+    {% if it.thumb_path %}
+      <img src="/thumb/{{ it.id }}" loading="lazy" alt="{{ it.filename }}"
+           class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform">
+    {% else %}
+      <span class="text-xs uppercase tracking-wide text-neutral-400">.{{ it.format }}</span>
+    {% endif %}
+  </div>
+  <div class="px-2 py-1.5">
+    <p class="truncate text-xs text-neutral-700" title="{{ it.filename }}">{{ it.title or it.filename }}</p>
+    <p class="text-[10px] uppercase text-neutral-400">{{ it.format }}</p>
+  </div>
+</a>
+{% endfor %}
+
+{% if has_more %}
+<button hx-get="/?{{ more_qs }}" hx-target="this" hx-swap="outerHTML"
+        class="col-span-full rounded border border-neutral-300 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100">
+  Carregar mais
+</button>
+{% endif %}
