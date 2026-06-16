@@ -88,13 +88,13 @@ export default function Today() {
 
   return (
     <div class="p-8">
-      <p class="text-sm font-medium uppercase tracking-wide text-accent-600">
+      <p class="text-sm font-medium uppercase tracking-wide text-accent-300">
         {WEEKDAYS[wd]} · hoje
       </p>
       <div class="flex items-baseline justify-between">
         <h1 class="mt-1 text-2xl font-semibold tracking-tight">O que praticar</h1>
         <Show when={items().length > 0}>
-          <span class="text-sm text-neutral-500">
+          <span class="text-sm text-muted">
             {doneCount()}/{items().length} feito
           </span>
         </Show>
@@ -104,17 +104,17 @@ export default function Today() {
 
       <Show
         when={!loading()}
-        fallback={<p class="mt-6 text-sm text-neutral-400">carregando…</p>}
+        fallback={<p class="mt-6 text-sm text-faint">carregando…</p>}
       >
         <Show
           when={items().length > 0}
           fallback={
-            <div class="mt-8 max-w-xl rounded-md border border-dashed border-neutral-300 bg-white p-8 text-center">
+            <div class="mt-8 max-w-xl rounded-md border border-dashed border-line bg-surface p-8 text-center">
               <p class="text-lg">🌿 Dia de descanso</p>
-              <p class="mt-1 text-sm text-neutral-500">
+              <p class="mt-1 text-sm text-muted">
                 Nenhuma prática agendada para hoje. Configure o template semanal
                 em{" "}
-                <A href="/planos" class="text-accent-700 hover:underline">
+                <A href="/planos" class="text-accent-300 hover:underline">
                   Planos
                 </A>
                 .
@@ -163,7 +163,7 @@ function PracticeItem(props: {
     "Prática";
 
   return (
-    <li class="rounded-md border border-neutral-200 bg-white px-4 py-3">
+    <li class="rounded-md border border-line bg-surface px-4 py-3">
       <div class="flex items-start gap-3">
         <Show
           when={props.log}
@@ -174,7 +174,7 @@ function PracticeItem(props: {
                 props.onComplete(note(), min() === "" ? null : Number(min()))
               }
               title="Marcar como feito"
-              class="mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 border-accent-400 transition-colors hover:bg-accent-100"
+              class="mt-0.5 h-5 w-5 shrink-0 rounded-full border-2 border-accent-500 transition-colors hover:bg-accent-500/15"
             />
           }
         >
@@ -190,12 +190,12 @@ function PracticeItem(props: {
 
         <div class="min-w-0 flex-1">
           <span
-            class="font-medium text-neutral-800"
-            classList={{ "line-through text-neutral-400": !!props.log }}
+            class="font-medium text-ink"
+            classList={{ "line-through text-faint": !!props.log }}
           >
             {title()}
           </span>
-          <div class="mt-0.5 flex flex-wrap gap-x-3 text-xs text-neutral-500">
+          <div class="mt-0.5 flex flex-wrap gap-x-3 text-xs text-muted">
             <span>{props.item.plan_name}</span>
             <Show when={props.item.subfolder}>
               <span>📁 {props.item.subfolder}</span>
@@ -210,7 +210,7 @@ function PracticeItem(props: {
             fallback={
               <>
                 <Show when={props.log!.quick_note || props.log!.duration_min}>
-                  <div class="mt-1 text-xs text-neutral-500">
+                  <div class="mt-1 text-xs text-muted">
                     <Show when={props.log!.duration_min}>
                       <span>{props.log!.duration_min} min</span>
                     </Show>
@@ -225,7 +225,7 @@ function PracticeItem(props: {
                     <button
                       type="button"
                       onClick={() => props.onAttach(props.log!)}
-                      class="mt-1 text-xs text-accent-700 hover:underline"
+                      class="mt-1 text-xs text-accent-300 hover:underline"
                     >
                       + anexar arte
                     </button>
@@ -233,13 +233,13 @@ function PracticeItem(props: {
                 >
                   <A
                     href={`/biblioteca/${props.log!.study_id}`}
-                    class="mt-2 flex items-center gap-2 rounded-md border border-neutral-200 bg-neutral-50 p-1.5 hover:border-accent-300"
+                    class="mt-2 flex items-center gap-2 rounded-md border border-line bg-bg p-1.5 hover:border-accent-500/60"
                   >
-                    <span class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded bg-neutral-100">
+                    <span class="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded bg-surface2">
                       <Show
                         when={props.art?.thumb_path}
                         fallback={
-                          <span class="text-[10px] uppercase text-neutral-400">
+                          <span class="text-[10px] uppercase text-faint">
                             {props.art?.format ?? "arte"}
                           </span>
                         }
@@ -251,7 +251,7 @@ function PracticeItem(props: {
                         />
                       </Show>
                     </span>
-                    <span class="text-xs text-accent-700">
+                    <span class="text-xs text-accent-300">
                       🎨 arte anexada · ver na biblioteca
                     </span>
                   </A>
@@ -268,13 +268,13 @@ function PracticeItem(props: {
                   setMin(e.currentTarget.value === "" ? "" : +e.currentTarget.value)
                 }
                 placeholder="min"
-                class="w-20 rounded-md border border-neutral-200 px-2 py-1 text-xs outline-none focus:border-accent-400"
+                class="w-20 rounded-md border border-line px-2 py-1 text-xs outline-none focus:border-accent-500"
               />
               <input
                 value={note()}
                 onInput={(e) => setNote(e.currentTarget.value)}
                 placeholder="nota rápida (opcional)"
-                class="flex-1 rounded-md border border-neutral-200 px-2 py-1 text-xs outline-none focus:border-accent-400"
+                class="flex-1 rounded-md border border-line px-2 py-1 text-xs outline-none focus:border-accent-500"
               />
             </div>
           </Show>

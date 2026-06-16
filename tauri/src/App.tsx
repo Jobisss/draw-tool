@@ -22,7 +22,7 @@ function Placeholder(props: { title: string; hint: string }) {
   return (
     <div class="p-8">
       <h1 class="text-2xl font-semibold tracking-tight">{props.title}</h1>
-      <p class="mt-2 text-sm text-neutral-500">{props.hint}</p>
+      <p class="mt-2 text-sm text-muted">{props.hint}</p>
     </div>
   );
 }

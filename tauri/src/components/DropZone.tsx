@@ -77,21 +77,21 @@ export default function DropZone(props: { onImported: () => void }) {
     <div
       class="rounded-md border-2 border-dashed p-4 transition-colors"
       classList={{
-        "border-accent-400 bg-accent-50": hover(),
-        "border-neutral-300 bg-white": !hover(),
+        "border-accent-500 bg-accent-500/10": hover(),
+        "border-line bg-surface": !hover(),
       }}
     >
       <Show
         when={srcs().length > 0}
         fallback={
           <div class="flex items-center justify-between gap-3">
-            <span class="text-sm text-neutral-500">
+            <span class="text-sm text-muted">
               Arraste arquivos aqui para importar para um plano.
             </span>
             <button
               type="button"
               onClick={pick}
-              class="shrink-0 rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-100"
+              class="shrink-0 rounded-md border border-line px-3 py-1.5 text-sm text-ink hover:bg-surface2"
             >
               Selecionar arquivos…
             </button>
@@ -99,15 +99,15 @@ export default function DropZone(props: { onImported: () => void }) {
         }
       >
         <div class="flex flex-wrap items-end gap-3">
-          <span class="text-sm text-neutral-700">
+          <span class="text-sm text-ink">
             {srcs().length} arquivo(s) pronto(s):
           </span>
           <label>
-            <span class="block text-xs font-medium text-neutral-600">Plano</span>
+            <span class="block text-xs font-medium text-muted">Plano</span>
             <select
               value={planId() ?? ""}
               onChange={(e) => setPlanId(Number(e.currentTarget.value))}
-              class="mt-1 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+              class="mt-1 rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
             >
               <For each={plans()}>
                 {(p) => <option value={p.id}>{p.name}</option>}
@@ -115,14 +115,14 @@ export default function DropZone(props: { onImported: () => void }) {
             </select>
           </label>
           <label>
-            <span class="block text-xs font-medium text-neutral-600">
+            <span class="block text-xs font-medium text-muted">
               Subpasta (opcional)
             </span>
             <input
               value={subfolder()}
               onInput={(e) => setSubfolder(e.currentTarget.value)}
               placeholder="gesture"
-              class="mt-1 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+              class="mt-1 rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
             />
           </label>
           <button
@@ -136,14 +136,14 @@ export default function DropZone(props: { onImported: () => void }) {
           <button
             type="button"
             onClick={() => setSrcs([])}
-            class="rounded-md border border-neutral-200 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-100"
+            class="rounded-md border border-line px-3 py-2 text-sm text-muted hover:bg-surface2"
           >
             Cancelar
           </button>
         </div>
       </Show>
       <Show when={msg()}>
-        <p class="mt-2 text-sm text-neutral-600">{msg()}</p>
+        <p class="mt-2 text-sm text-muted">{msg()}</p>
       </Show>
     </div>
   );

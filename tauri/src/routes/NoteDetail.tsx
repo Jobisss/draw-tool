@@ -112,15 +112,15 @@ export default function NoteDetail() {
 
   return (
     <div class="p-8">
-      <A href="/notas" class="text-sm text-neutral-500 hover:text-accent-700">
+      <A href="/notas" class="text-sm text-muted hover:text-accent-300">
         ← Notas
       </A>
 
-      <Show when={note()} fallback={<p class="mt-4 text-neutral-400">…</p>}>
+      <Show when={note()} fallback={<p class="mt-4 text-faint">…</p>}>
         <input
           value={title()}
           onInput={(e) => setTitle(e.currentTarget.value)}
-          class="mt-3 w-full max-w-3xl border-0 border-b border-transparent bg-transparent text-2xl font-semibold tracking-tight outline-none focus:border-accent-300"
+          class="mt-3 w-full max-w-3xl border-0 border-b border-transparent bg-transparent text-2xl font-semibold tracking-tight outline-none focus:border-accent-500/60"
         />
 
         <div class="mt-4 grid max-w-5xl grid-cols-1 gap-4 lg:grid-cols-2">
@@ -131,11 +131,11 @@ export default function NoteDetail() {
               onInput={onBodyInput}
               onKeyDown={(e) => e.key === "Escape" && setSuggest(null)}
               placeholder="Escreva em markdown. [[Outra nota]] cria link."
-              class="min-h-[50vh] w-full resize-none rounded-md border border-neutral-200 bg-white p-4 font-mono text-sm outline-none focus:border-accent-400"
+              class="min-h-[50vh] w-full resize-none rounded-md border border-line bg-surface p-4 font-mono text-sm outline-none focus:border-accent-500"
             />
             <Show when={suggest() && candidates().length > 0}>
-              <ul class="absolute left-4 top-4 z-20 w-64 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-lg">
-                <li class="border-b border-neutral-100 px-3 py-1 text-xs text-neutral-400">
+              <ul class="absolute left-4 top-4 z-20 w-64 overflow-hidden rounded-md border border-line bg-surface shadow-lg">
+                <li class="border-b border-line px-3 py-1 text-xs text-faint">
                   notas para [[link]]
                 </li>
                 <For each={candidates()}>
@@ -144,7 +144,7 @@ export default function NoteDetail() {
                       <button
                         type="button"
                         onClick={() => pick(n.title)}
-                        class="block w-full px-3 py-1.5 text-left text-sm hover:bg-accent-50"
+                        class="block w-full px-3 py-1.5 text-left text-sm hover:bg-accent-500/10"
                       >
                         {n.title}
                       </button>
@@ -155,7 +155,7 @@ export default function NoteDetail() {
             </Show>
           </div>
           <div
-            class="prose prose-sm min-h-[50vh] max-w-none overflow-auto rounded-md border border-neutral-200 bg-white p-4"
+            class="prose prose-sm prose-invert min-h-[50vh] max-w-none overflow-auto rounded-md border border-line bg-surface p-4"
             innerHTML={html()}
           />
         </div>
@@ -169,21 +169,21 @@ export default function NoteDetail() {
           </button>
           <button
             onClick={remove}
-            class="rounded-md border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+            class="rounded-md border border-red-500/40 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10"
           >
             Apagar
           </button>
           <Show when={saved()}>
-            <span class="text-sm text-accent-600">salvo ✓</span>
+            <span class="text-sm text-accent-300">salvo ✓</span>
           </Show>
         </div>
 
         <section class="mt-8 max-w-3xl">
-          <h2 class="text-sm font-medium text-neutral-700">Backlinks</h2>
+          <h2 class="text-sm font-medium text-ink">Backlinks</h2>
           <Show
             when={(links() ?? []).length > 0}
             fallback={
-              <p class="mt-2 text-sm text-neutral-400">
+              <p class="mt-2 text-sm text-faint">
                 Nenhuma nota aponta para esta.
               </p>
             }
@@ -194,7 +194,7 @@ export default function NoteDetail() {
                   <li>
                     <A
                       href={`/notas/${n.id}`}
-                      class="text-sm text-accent-700 hover:underline"
+                      class="text-sm text-accent-300 hover:underline"
                     >
                       {n.title}
                     </A>

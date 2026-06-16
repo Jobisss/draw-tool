@@ -6,7 +6,7 @@ import { todayDate } from "../lib/logs";
 const WEEKS = 53;
 
 function heatClass(n: number): string {
-  if (n <= 0) return "bg-neutral-100";
+  if (n <= 0) return "bg-surface2";
   if (n === 1) return "bg-accent-200";
   if (n === 2) return "bg-accent-300";
   if (n === 3) return "bg-accent-400";
@@ -70,8 +70,8 @@ export default function Dashboard() {
       {/* Heatmap */}
       <section class="mt-8">
         <div class="flex items-baseline justify-between">
-          <h2 class="text-sm font-medium text-neutral-700">Atividade</h2>
-          <span class="text-xs text-neutral-500">
+          <h2 class="text-sm font-medium text-ink">Atividade</h2>
+          <span class="text-xs text-muted">
             <Show when={hover()} fallback="passe o mouse num dia">
               {fmtDate(hover()!.date)} ·{" "}
               {hover()!.count === 1
@@ -81,7 +81,7 @@ export default function Dashboard() {
           </span>
         </div>
         <div
-          class="mt-3 flex gap-[3px] overflow-x-auto rounded-md border border-neutral-200 bg-white p-3"
+          class="mt-3 flex gap-[3px] overflow-x-auto rounded-md border border-line bg-surface p-3"
           onMouseLeave={() => setHover(null)}
         >
           <For each={columns()}>
@@ -105,11 +105,11 @@ export default function Dashboard() {
 
       {/* Por técnica */}
       <section class="mt-8 max-w-xl">
-        <h2 class="text-sm font-medium text-neutral-700">Estudos por técnica</h2>
+        <h2 class="text-sm font-medium text-ink">Estudos por técnica</h2>
         <Show
           when={(techs() ?? []).length > 0}
           fallback={
-            <p class="mt-2 text-sm text-neutral-400">
+            <p class="mt-2 text-sm text-faint">
               Sem tags de técnica ainda.
             </p>
           }
@@ -118,14 +118,14 @@ export default function Dashboard() {
             <For each={techs()}>
               {(t) => (
                 <div class="flex items-center gap-3 text-sm">
-                  <span class="w-32 truncate text-neutral-600">{t.name}</span>
-                  <div class="h-3 flex-1 overflow-hidden rounded-full bg-neutral-100">
+                  <span class="w-32 truncate text-muted">{t.name}</span>
+                  <div class="h-3 flex-1 overflow-hidden rounded-full bg-surface2">
                     <div
                       class="h-full rounded-full bg-accent-500"
                       style={{ width: `${(t.count / maxTech()) * 100}%` }}
                     />
                   </div>
-                  <span class="w-8 text-right text-neutral-500">{t.count}</span>
+                  <span class="w-8 text-right text-muted">{t.count}</span>
                 </div>
               )}
             </For>
@@ -138,8 +138,8 @@ export default function Dashboard() {
 
 function Card(props: { label: string; value: string }) {
   return (
-    <div class="rounded-md border border-neutral-200 bg-white p-4">
-      <p class="text-xs uppercase tracking-wide text-neutral-400">
+    <div class="rounded-md border border-line bg-surface p-4">
+      <p class="text-xs uppercase tracking-wide text-faint">
         {props.label}
       </p>
       <p class="mt-1 text-2xl font-semibold tracking-tight">{props.value}</p>

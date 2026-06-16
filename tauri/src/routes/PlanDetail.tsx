@@ -53,13 +53,13 @@ export default function PlanDetail() {
 
   return (
     <div class="p-8">
-      <A href="/planos" class="text-sm text-neutral-500 hover:text-accent-700">
+      <A href="/planos" class="text-sm text-muted hover:text-accent-300">
         ← Planos
       </A>
       <h1 class="mt-2 text-2xl font-semibold tracking-tight">
         {plan()?.name ?? "Plano"}
       </h1>
-      <p class="mt-1 text-sm text-neutral-500">
+      <p class="mt-1 text-sm text-muted">
         Template semanal: o que praticar em cada dia da semana.
       </p>
 
@@ -68,11 +68,11 @@ export default function PlanDetail() {
         class="mt-6 flex max-w-3xl flex-wrap items-end gap-3"
       >
         <label>
-          <span class="block text-xs font-medium text-neutral-600">Dia</span>
+          <span class="block text-xs font-medium text-muted">Dia</span>
           <select
             value={weekday()}
             onChange={(e) => setWeekday(+e.currentTarget.value)}
-            class="mt-1 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+            class="mt-1 rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
           >
             <For each={WEEKDAYS}>
               {(d, i) => <option value={i()}>{d}</option>}
@@ -80,34 +80,34 @@ export default function PlanDetail() {
           </select>
         </label>
         <label class="flex-1">
-          <span class="block text-xs font-medium text-neutral-600">Técnica</span>
+          <span class="block text-xs font-medium text-muted">Técnica</span>
           <input
             value={technique()}
             onInput={(e) => setTechnique(e.currentTarget.value)}
             placeholder="gesture"
-            class="mt-1 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+            class="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
           />
         </label>
         <label class="flex-1">
-          <span class="block text-xs font-medium text-neutral-600">
+          <span class="block text-xs font-medium text-muted">
             Subpasta
           </span>
           <input
             value={subfolder()}
             onInput={(e) => setSubfolder(e.currentTarget.value)}
             placeholder="gesture"
-            class="mt-1 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+            class="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
           />
         </label>
         <label class="flex-1">
-          <span class="block text-xs font-medium text-neutral-600">
+          <span class="block text-xs font-medium text-muted">
             Lição/nota
           </span>
           <input
             value={note()}
             onInput={(e) => setNote(e.currentTarget.value)}
             placeholder="lição 3"
-            class="mt-1 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+            class="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
           />
         </label>
         <button
@@ -121,31 +121,31 @@ export default function PlanDetail() {
       <div class="mt-8 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <For each={WEEKDAYS}>
           {(d, i) => (
-            <div class="rounded-md border border-neutral-200 bg-white p-3">
-              <h3 class="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+            <div class="rounded-md border border-line bg-surface p-3">
+              <h3 class="text-xs font-semibold uppercase tracking-wide text-faint">
                 {d}
               </h3>
               <ul class="mt-2 space-y-2">
                 <Show
                   when={slotsForDay(i()).length > 0}
                   fallback={
-                    <li class="text-xs text-neutral-300">—</li>
+                    <li class="text-xs text-faint">—</li>
                   }
                 >
                   <For each={slotsForDay(i())}>
                     {(s) => (
-                      <li class="group flex items-start justify-between gap-2 rounded bg-neutral-50 px-2 py-1.5 text-sm">
+                      <li class="group flex items-start justify-between gap-2 rounded bg-bg px-2 py-1.5 text-sm">
                         <div class="min-w-0">
-                          <span class="font-medium text-neutral-800">
+                          <span class="font-medium text-ink">
                             {s.technique ?? "—"}
                           </span>
                           <Show when={s.subfolder}>
-                            <span class="block truncate text-xs text-neutral-500">
+                            <span class="block truncate text-xs text-muted">
                               📁 {s.subfolder}
                             </span>
                           </Show>
                           <Show when={s.note}>
-                            <span class="block truncate text-xs text-neutral-500">
+                            <span class="block truncate text-xs text-muted">
                               {s.note}
                             </span>
                           </Show>
@@ -153,7 +153,7 @@ export default function PlanDetail() {
                         <button
                           type="button"
                           onClick={() => remove(s.id)}
-                          class="shrink-0 text-neutral-300 hover:text-red-500"
+                          class="shrink-0 text-faint hover:text-red-500"
                           title="Remover"
                         >
                           ✕

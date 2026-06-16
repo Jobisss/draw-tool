@@ -24,7 +24,7 @@ export default function Timeline() {
   return (
     <div class="p-8">
       <h1 class="text-2xl font-semibold tracking-tight">Timeline</h1>
-      <p class="mt-1 text-sm text-neutral-500">
+      <p class="mt-1 text-sm text-muted">
         Evolução cronológica dos estudos, agrupada por mês.
       </p>
 
@@ -32,7 +32,7 @@ export default function Timeline() {
         <select
           value={planId()}
           onChange={(e) => setPlanId(e.currentTarget.value)}
-          class="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+          class="rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
         >
           <option value="">Todos os planos</option>
           <For each={plans() ?? []}>
@@ -42,7 +42,7 @@ export default function Timeline() {
         <select
           value={tagId()}
           onChange={(e) => setTagId(e.currentTarget.value)}
-          class="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+          class="rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
         >
           <option value="">Todas as tags</option>
           <For each={tags() ?? []}>
@@ -55,7 +55,7 @@ export default function Timeline() {
           </For>
         </select>
         <Show when={studies()}>
-          <span class="text-sm text-neutral-500">
+          <span class="text-sm text-muted">
             {studies()!.length} estudos
           </span>
         </Show>
@@ -64,7 +64,7 @@ export default function Timeline() {
       <Show
         when={groups().length > 0}
         fallback={
-          <p class="mt-8 text-sm text-neutral-400">
+          <p class="mt-8 text-sm text-faint">
             Nenhum estudo com data no filtro atual.
           </p>
         }
@@ -73,9 +73,9 @@ export default function Timeline() {
           <For each={groups()}>
             {(g) => (
               <section>
-                <h2 class="sticky top-0 bg-neutral-50/90 py-1 text-sm font-semibold capitalize text-neutral-700 backdrop-blur">
+                <h2 class="sticky top-0 bg-bg/90 py-1 text-sm font-semibold capitalize text-ink backdrop-blur">
                   {g.label}{" "}
-                  <span class="font-normal text-neutral-400">
+                  <span class="font-normal text-faint">
                     · {g.studies.length}
                   </span>
                 </h2>

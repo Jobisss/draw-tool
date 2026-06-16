@@ -18,7 +18,7 @@ const NAV: NavItem[] = [
 
 export default function Sidebar() {
   return (
-    <aside class="no-print flex w-56 shrink-0 flex-col border-r border-neutral-200 bg-white">
+    <aside class="no-print flex w-56 shrink-0 flex-col border-r border-line bg-surface">
       <div class="flex items-center gap-2 px-4 py-4">
         <span class="grid h-8 w-8 place-items-center rounded-md bg-accent-500 font-bold text-white">
           D
@@ -31,10 +31,10 @@ export default function Sidebar() {
             <A
               href={item.path}
               end={item.path === "/"}
-              class="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
-              activeClass="bg-accent-50 text-accent-700 font-medium hover:bg-accent-50 hover:text-accent-700"
+              class="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted transition-colors hover:bg-surface2 hover:text-ink"
+              activeClass="bg-accent-500/10 text-accent-300 font-medium hover:bg-accent-500/10 hover:text-accent-300"
             >
-              <span class="w-4 text-center text-neutral-400">{item.icon}</span>
+              <span class="w-4 text-center text-faint">{item.icon}</span>
               {item.label}
             </A>
           )}

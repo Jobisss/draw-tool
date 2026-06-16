@@ -49,7 +49,7 @@ export default function Collections() {
   return (
     <div class="p-8">
       <h1 class="text-2xl font-semibold tracking-tight">Coleções</h1>
-      <p class="mt-1 text-sm text-neutral-500">
+      <p class="mt-1 text-sm text-muted">
         Pastas virtuais de estudos (não mexem no vault).
       </p>
 
@@ -58,7 +58,7 @@ export default function Collections() {
           value={name()}
           onInput={(e) => setName(e.currentTarget.value)}
           placeholder="Nova coleção"
-          class="flex-1 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+          class="flex-1 rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
         />
         <button
           type="submit"
@@ -76,9 +76,9 @@ export default function Collections() {
               onClick={() => setSelected(c.id)}
               class="rounded-full border px-3 py-1 text-sm transition-colors"
               classList={{
-                "border-accent-400 bg-accent-50 text-accent-700 font-medium":
+                "border-accent-500 bg-accent-500/10 text-accent-300 font-medium":
                   selected() === c.id,
-                "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50":
+                "border-line bg-surface text-ink hover:bg-bg":
                   selected() !== c.id,
               }}
             >
@@ -90,14 +90,14 @@ export default function Collections() {
 
       <Show when={selected()}>
         <div class="mt-6 flex items-center justify-between">
-          <p class="text-sm text-neutral-500">
-            <span class="font-medium text-neutral-700">{currentName()}</span> ·{" "}
+          <p class="text-sm text-muted">
+            <span class="font-medium text-ink">{currentName()}</span> ·{" "}
             {(studies() ?? []).length} imagem(ns)
           </p>
           <button
             type="button"
             onClick={() => remove(selected()!, currentName())}
-            class="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+            class="rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 hover:bg-red-500/10"
           >
             Apagar coleção
           </button>

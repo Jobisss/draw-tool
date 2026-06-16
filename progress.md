@@ -462,6 +462,17 @@ Backlog v1 (se voltar): file-watch, multi-vault, FTS5, render `.clip`, toggle cl
 - **Coleções UX:** chips agora só selecionam (sem X que apagava por engano); apagar virou botão
   "Apagar coleção" dedicado, com confirm, ao lado da galeria. Mostra "<nome> · N imagens".
 
+### 2026-06-16 — v2 Redesign: tema escuro customizado (vibe toile/engraving)
+- Feito: tema **dark** + acento **azul-cobalto** (`#4a5cf5`) + **títulos serifados** + bold/expressivo
+  (referência: Social Impact Capital). `tailwind.config.js`: escala accent azul + tokens semânticos
+  (`bg/surface/surface2/line/ink/muted/faint`) + `fontFamily.serif`. `index.css`: body dark, h1/h2/h3
+  serif, `::selection` azul, scrollbar discreta. Sweep (perl) em ~18 .tsx: classes claras→tokens
+  escuros (bg-white→surface, neutral-*→ink/muted/faint/line, accent-50→accent-500/10, links→accent-300,
+  amber/red→variantes dark). Markdown com `prose-invert`. Grafo: nós azul + stroke/fill p/ escuro.
+- Verificado: `npm run build` OK; app sobe no escuro.
+- Decisões: tema dark-only por ora (tokens já prontos p/ futuro toggle); serifa só nos títulos;
+  sem ornamentos toile (peso). Iterar conforme feedback (intensidade do azul, fundo, serifa no corpo).
+
 ## Template de entrada (copiar p/ cada fase)
 ```
 ### AAAA-MM-DD — Fase X: <nome>

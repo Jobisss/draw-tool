@@ -73,8 +73,8 @@ export default function Settings() {
       <h1 class="text-2xl font-semibold tracking-tight">Configurações</h1>
 
       <section class="mt-6 max-w-2xl">
-        <h2 class="text-sm font-medium text-neutral-700">Pasta do vault</h2>
-        <p class="mt-1 text-sm text-neutral-500">
+        <h2 class="text-sm font-medium text-ink">Pasta do vault</h2>
+        <p class="mt-1 text-sm text-muted">
           Pasta-cofre com seus desenhos. O app indexa o conteúdo (somente leitura,
           exceto operações explícitas).
         </p>
@@ -82,9 +82,9 @@ export default function Settings() {
         <div class="mt-3 flex items-center gap-3">
           <Show
             when={!loading()}
-            fallback={<span class="text-sm text-neutral-400">carregando…</span>}
+            fallback={<span class="text-sm text-faint">carregando…</span>}
           >
-            <code class="flex-1 truncate rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700">
+            <code class="flex-1 truncate rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink">
               {vault() ?? "— nenhuma pasta escolhida —"}
             </code>
           </Show>
@@ -102,12 +102,12 @@ export default function Settings() {
             type="button"
             onClick={runScan}
             disabled={!vault() || scanning()}
-            class="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-50"
+            class="rounded-md border border-line px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface2 disabled:opacity-50"
           >
             {scanning() ? "Indexando…" : "Indexar vault"}
           </button>
           <Show when={stats()}>
-            <span class="text-sm text-neutral-600">
+            <span class="text-sm text-muted">
               {stats()!.total} arquivos · +{stats()!.added} novos ·{" "}
               {stats()!.updated} atualizados · {stats()!.removed} removidos
               <Show when={thumbs() !== null}>
@@ -117,17 +117,17 @@ export default function Settings() {
           </Show>
         </div>
         <Show when={scanErr()}>
-          <p class="mt-2 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+          <p class="mt-2 rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-300">
             {scanErr()}
           </p>
         </Show>
       </section>
 
-      <section class="mt-8 max-w-2xl border-t border-neutral-200 pt-6">
-        <h2 class="text-sm font-medium text-neutral-700">
+      <section class="mt-8 max-w-2xl border-t border-line pt-6">
+        <h2 class="text-sm font-medium text-ink">
           Lembrete diário de prática
         </h2>
-        <p class="mt-1 text-sm text-neutral-500">
+        <p class="mt-1 text-sm text-muted">
           Notificação no horário escolhido (enquanto o app estiver aberto).
         </p>
         <div class="mt-3 flex items-center gap-3">
@@ -144,12 +144,12 @@ export default function Settings() {
             value={notifyTime()}
             onChange={(e) => saveNotifyTime(e.currentTarget.value)}
             disabled={!notifyOn()}
-            class="rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-accent-400 disabled:opacity-50"
+            class="rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500 disabled:opacity-50"
           />
           <button
             type="button"
             onClick={() => sendReminder("Notificação de teste 🔔")}
-            class="rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 hover:bg-neutral-100"
+            class="rounded-md border border-line px-3 py-1.5 text-sm text-ink hover:bg-surface2"
           >
             Testar
           </button>

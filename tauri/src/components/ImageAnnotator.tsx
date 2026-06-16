@@ -71,8 +71,8 @@ export default function ImageAnnotator(props: {
               •
             </button>
             <Show when={openId() === a.id}>
-              <div class="absolute left-6 top-0 z-10 w-48 rounded-md border border-neutral-200 bg-white p-2 text-xs shadow">
-                <p class="text-neutral-700">{a.text}</p>
+              <div class="absolute left-6 top-0 z-10 w-48 rounded-md border border-line bg-surface p-2 text-xs shadow">
+                <p class="text-ink">{a.text}</p>
                 <button
                   onClick={() => remove(a.id)}
                   class="mt-1 text-red-500 hover:underline"
@@ -91,14 +91,14 @@ export default function ImageAnnotator(props: {
           class="absolute z-20 -translate-x-1/2 -translate-y-1/2"
           style={{ left: `${pending()!.x}%`, top: `${pending()!.y}%` }}
         >
-          <div class="flex items-center gap-1 rounded-md border border-accent-300 bg-white p-1 shadow">
+          <div class="flex items-center gap-1 rounded-md border border-accent-500/60 bg-surface p-1 shadow">
             <input
               autofocus
               value={text()}
               onInput={(e) => setText(e.currentTarget.value)}
               onKeyDown={(e) => e.key === "Enter" && confirm()}
               placeholder="anotação"
-              class="w-32 rounded border border-neutral-200 px-1 py-0.5 text-xs outline-none"
+              class="w-32 rounded border border-line px-1 py-0.5 text-xs outline-none"
             />
             <button
               onClick={confirm}

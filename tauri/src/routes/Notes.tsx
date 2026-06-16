@@ -19,7 +19,7 @@ export default function Notes() {
   return (
     <div class="p-8">
       <h1 class="text-2xl font-semibold tracking-tight">Notas</h1>
-      <p class="mt-1 text-sm text-neutral-500">
+      <p class="mt-1 text-sm text-muted">
         Notas em markdown. Use <code>[[Título]]</code> para vincular outras notas.
       </p>
 
@@ -28,7 +28,7 @@ export default function Notes() {
           value={title()}
           onInput={(e) => setTitle(e.currentTarget.value)}
           placeholder="Título da nota"
-          class="flex-1 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+          class="flex-1 rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
         />
         <button
           type="submit"
@@ -38,11 +38,11 @@ export default function Notes() {
         </button>
       </form>
 
-      <ul class="mt-6 max-w-md divide-y divide-neutral-200 rounded-md border border-neutral-200 bg-white">
+      <ul class="mt-6 max-w-md divide-y divide-line rounded-md border border-line bg-surface">
         <Show
           when={(notes() ?? []).length > 0}
           fallback={
-            <li class="px-4 py-6 text-center text-sm text-neutral-400">
+            <li class="px-4 py-6 text-center text-sm text-faint">
               Nenhuma nota ainda.
             </li>
           }
@@ -52,7 +52,7 @@ export default function Notes() {
               <li>
                 <A
                   href={`/notas/${n.id}`}
-                  class="block px-4 py-3 text-sm font-medium text-neutral-800 hover:bg-neutral-50"
+                  class="block px-4 py-3 text-sm font-medium text-ink hover:bg-bg"
                 >
                   {n.title}
                 </A>

@@ -40,7 +40,7 @@ export default function Graph() {
   return (
     <div class="p-8">
       <h1 class="text-2xl font-semibold tracking-tight">Grafo</h1>
-      <p class="mt-1 text-sm text-neutral-500">
+      <p class="mt-1 text-sm text-muted">
         Notas e seus vínculos (<code>[[wikilinks]]</code>). Clique num nó para
         abrir.
       </p>
@@ -48,14 +48,14 @@ export default function Graph() {
       <Show
         when={(notes() ?? []).length > 0}
         fallback={
-          <p class="mt-8 text-sm text-neutral-400">
+          <p class="mt-8 text-sm text-faint">
             Nenhuma nota ainda. Crie em Notas.
           </p>
         }
       >
         <svg
           viewBox={`0 0 ${W} ${H}`}
-          class="mt-6 max-w-3xl rounded-md border border-neutral-200 bg-white"
+          class="mt-6 max-w-3xl rounded-md border border-line bg-surface"
         >
           <For each={edges()}>
             {(e) => (
@@ -64,7 +64,7 @@ export default function Graph() {
                 y1={e.a!.y}
                 x2={e.b!.x}
                 y2={e.b!.y}
-                stroke="#d4d4d4"
+                stroke="#33334a"
                 stroke-width="1.5"
               />
             )}
@@ -75,12 +75,12 @@ export default function Graph() {
                 class="cursor-pointer"
                 onClick={() => navigate(`/notas/${id}`)}
               >
-                <circle cx={p.x} cy={p.y} r="8" fill="#f59e0b" />
+                <circle cx={p.x} cy={p.y} r="8" fill="#4a5cf5" />
                 <text
                   x={p.x}
                   y={p.y - 14}
                   text-anchor="middle"
-                  class="fill-neutral-700 text-xs"
+                  class="fill-[#c5c5d4] text-xs"
                 >
                   {p.title}
                 </text>

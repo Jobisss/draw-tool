@@ -32,7 +32,7 @@ export default function Library() {
   return (
     <div class="p-8">
       <h1 class="text-2xl font-semibold tracking-tight">Biblioteca</h1>
-      <p class="mt-1 text-sm text-neutral-500">
+      <p class="mt-1 text-sm text-muted">
         Estudos indexados do vault. Indexe em Configurações.
       </p>
 
@@ -45,12 +45,12 @@ export default function Library() {
           value={search()}
           onInput={(e) => setSearch(e.currentTarget.value)}
           placeholder="Buscar por nome ou tag…"
-          class="w-64 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+          class="w-64 rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
         />
         <select
           value={format()}
           onChange={(e) => setFormat(e.currentTarget.value)}
-          class="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+          class="rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
         >
           <option value="">Todos formatos</option>
           <For each={formats() ?? []}>
@@ -60,7 +60,7 @@ export default function Library() {
         <select
           value={collection()}
           onChange={(e) => setCollection(e.currentTarget.value)}
-          class="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+          class="rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
         >
           <option value="">Todas coleções</option>
           <For each={collections() ?? []}>
@@ -68,7 +68,7 @@ export default function Library() {
           </For>
         </select>
         <Show when={studies()}>
-          <span class="text-sm text-neutral-500">
+          <span class="text-sm text-muted">
             {studies()!.length} estudos
           </span>
         </Show>
@@ -76,7 +76,7 @@ export default function Library() {
 
       <Show
         when={!studies.loading}
-        fallback={<p class="mt-6 text-sm text-neutral-400">carregando…</p>}
+        fallback={<p class="mt-6 text-sm text-faint">carregando…</p>}
       >
         <Gallery studies={studies() ?? []} />
       </Show>

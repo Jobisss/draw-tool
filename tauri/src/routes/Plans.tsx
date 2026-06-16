@@ -87,22 +87,22 @@ export default function Plans() {
   return (
     <div class="p-8">
       <h1 class="text-2xl font-semibold tracking-tight">Planos</h1>
-      <p class="mt-1 text-sm text-neutral-500">
+      <p class="mt-1 text-sm text-muted">
         Planos de estudo com meta semanal. Ative os que está praticando agora.
       </p>
 
       <form onSubmit={submit} class="mt-6 flex max-w-2xl items-end gap-3">
         <label class="flex-1">
-          <span class="block text-xs font-medium text-neutral-600">Nome</span>
+          <span class="block text-xs font-medium text-muted">Nome</span>
           <input
             value={name()}
             onInput={(e) => setName(e.currentTarget.value)}
             placeholder="Ex.: Fundamentos de gesture"
-            class="mt-1 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+            class="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
           />
         </label>
         <label class="w-40">
-          <span class="block text-xs font-medium text-neutral-600">
+          <span class="block text-xs font-medium text-muted">
             Meta semanal (dias)
           </span>
           <input
@@ -114,7 +114,7 @@ export default function Plans() {
               setGoal(e.currentTarget.value === "" ? "" : +e.currentTarget.value)
             }
             placeholder="5"
-            class="mt-1 w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+            class="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
           />
         </label>
         <button
@@ -126,16 +126,16 @@ export default function Plans() {
       </form>
 
       <Show when={msg()}>
-        <p class="mt-3 max-w-2xl rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <p class="mt-3 max-w-2xl rounded-md bg-amber-500/10 px-3 py-2 text-sm text-amber-300">
           {msg()}
         </p>
       </Show>
 
-      <ul class="mt-8 max-w-2xl divide-y divide-neutral-200 rounded-md border border-neutral-200 bg-white">
+      <ul class="mt-8 max-w-2xl divide-y divide-line rounded-md border border-line bg-surface">
         <Show
           when={plans().length > 0}
           fallback={
-            <li class="px-4 py-6 text-center text-sm text-neutral-400">
+            <li class="px-4 py-6 text-center text-sm text-faint">
               Nenhum plano ainda.
             </li>
           }
@@ -147,24 +147,24 @@ export default function Plans() {
                   <div class="flex items-center gap-2">
                     <A
                       href={`/planos/${p.id}`}
-                      class="font-medium text-accent-700 hover:underline"
+                      class="font-medium text-accent-300 hover:underline"
                     >
                       {p.name}
                     </A>
                     <Show
                       when={p.active === 1}
                       fallback={
-                        <span class="rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500">
+                        <span class="rounded-full bg-surface2 px-2 py-0.5 text-xs text-muted">
                           arquivado
                         </span>
                       }
                     >
-                      <span class="rounded-full bg-accent-100 px-2 py-0.5 text-xs text-accent-700">
+                      <span class="rounded-full bg-accent-500/15 px-2 py-0.5 text-xs text-accent-300">
                         ativo
                       </span>
                     </Show>
                   </div>
-                  <span class="text-xs text-neutral-500">
+                  <span class="text-xs text-muted">
                     {p.weekly_goal_days
                       ? `meta: ${p.weekly_goal_days} dias/semana`
                       : "sem meta semanal"}
@@ -172,13 +172,13 @@ export default function Plans() {
                   <Show
                     when={p.folder_path}
                     fallback={
-                      <span class="block truncate text-xs text-neutral-400">
+                      <span class="block truncate text-xs text-faint">
                         sem pasta no vault
                       </span>
                     }
                   >
                     <span
-                      class="block truncate text-xs text-neutral-400"
+                      class="block truncate text-xs text-faint"
                       title={p.folder_path!}
                     >
                       📁 {p.folder_path}
@@ -195,7 +195,7 @@ export default function Plans() {
                   <button
                     type="button"
                     onClick={() => makeFolder(p)}
-                    class="shrink-0 rounded-md border border-neutral-200 px-3 py-1.5 text-sm text-neutral-700 transition-colors hover:bg-neutral-100"
+                    class="shrink-0 rounded-md border border-line px-3 py-1.5 text-sm text-ink transition-colors hover:bg-surface2"
                   >
                     Criar pasta
                   </button>
@@ -203,14 +203,14 @@ export default function Plans() {
                 <button
                   type="button"
                   onClick={() => toggle(p)}
-                  class="shrink-0 rounded-md border border-neutral-200 px-3 py-1.5 text-sm text-neutral-700 transition-colors hover:bg-neutral-100"
+                  class="shrink-0 rounded-md border border-line px-3 py-1.5 text-sm text-ink transition-colors hover:bg-surface2"
                 >
                   {p.active === 1 ? "Arquivar" : "Ativar"}
                 </button>
                 <button
                   type="button"
                   onClick={() => removePlan(p)}
-                  class="shrink-0 rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600 transition-colors hover:bg-red-50"
+                  class="shrink-0 rounded-md border border-red-500/40 px-3 py-1.5 text-sm text-red-400 transition-colors hover:bg-red-500/10"
                 >
                   Apagar
                 </button>

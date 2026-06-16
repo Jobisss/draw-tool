@@ -29,7 +29,7 @@ export default function ReferenceList(props: { studyId: number }) {
 
   return (
     <section>
-      <h3 class="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+      <h3 class="text-xs font-semibold uppercase tracking-wide text-faint">
         Referências
       </h3>
       <ul class="mt-2 space-y-1">
@@ -38,14 +38,14 @@ export default function ReferenceList(props: { studyId: number }) {
             <li class="flex items-center justify-between gap-2 text-sm">
               <button
                 onClick={() => openUrl(r.url)}
-                class="truncate text-left text-accent-700 hover:underline"
+                class="truncate text-left text-accent-300 hover:underline"
                 title={r.url}
               >
                 {r.caption || r.url}
               </button>
               <button
                 onClick={() => remove(r.id)}
-                class="shrink-0 text-neutral-300 hover:text-red-500"
+                class="shrink-0 text-faint hover:text-red-500"
               >
                 ✕
               </button>
@@ -58,18 +58,18 @@ export default function ReferenceList(props: { studyId: number }) {
           value={url()}
           onInput={(e) => setUrl(e.currentTarget.value)}
           placeholder="https://…"
-          class="w-full rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-accent-400"
+          class="w-full rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
         />
         <div class="flex gap-2">
           <input
             value={caption()}
             onInput={(e) => setCaption(e.currentTarget.value)}
             placeholder="legenda (opcional)"
-            class="flex-1 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-accent-400"
+            class="flex-1 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
           />
           <button
             onClick={add}
-            class="rounded-md border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
+            class="rounded-md border border-line px-3 py-1 text-sm hover:bg-surface2"
           >
             +
           </button>

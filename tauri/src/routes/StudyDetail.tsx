@@ -81,26 +81,26 @@ export default function StudyDetail() {
 
   return (
     <div class="p-8">
-      <A href="/biblioteca" class="text-sm text-neutral-500 hover:text-accent-700">
+      <A href="/biblioteca" class="text-sm text-muted hover:text-accent-300">
         ← Biblioteca
       </A>
-      <Show when={study()} fallback={<p class="mt-4 text-neutral-400">…</p>}>
+      <Show when={study()} fallback={<p class="mt-4 text-faint">…</p>}>
         {(s) => (
           <div class="mt-3 grid max-w-5xl grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
             <Show
               when={!isMd()}
               fallback={
                 <div
-                  class="prose prose-sm max-w-none rounded-md border border-neutral-200 bg-white p-6"
+                  class="prose prose-sm prose-invert max-w-none rounded-md border border-line bg-surface p-6"
                   innerHTML={md.render(mdText() ?? "")}
                 />
               }
             >
-              <div class="grid min-h-[300px] place-items-center rounded-md border border-neutral-200 bg-neutral-100 p-4">
+              <div class="grid min-h-[300px] place-items-center rounded-md border border-line bg-surface2 p-4">
                 <Show
                   when={src()}
                   fallback={
-                    <span class="text-5xl uppercase text-neutral-300">
+                    <span class="text-5xl uppercase text-faint">
                       {s().format}
                     </span>
                   }
@@ -139,7 +139,7 @@ export default function StudyDetail() {
                 <button
                   type="button"
                   onClick={() => removeStudy(s().path, s().id)}
-                  class="rounded-md border border-red-200 px-4 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
+                  class="rounded-md border border-red-500/40 px-4 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10"
                 >
                   Apagar
                 </button>
@@ -221,32 +221,32 @@ function StudyEditors(props: { studyId: number }) {
   const inCol = (id: number) => studyCols()?.some((c) => c.id === id);
 
   return (
-    <div class="mt-6 space-y-5 border-t border-neutral-200 pt-5">
+    <div class="mt-6 space-y-5 border-t border-line pt-5">
       {/* Data do estudo */}
       <section>
-        <h3 class="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-faint">
           Data do estudo
         </h3>
         <input
           type="date"
           value={date()}
           onChange={(e) => saveDate(e.currentTarget.value)}
-          class="mt-2 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-accent-400"
+          class="mt-2 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
         />
-        <p class="mt-1 text-xs text-neutral-400">
+        <p class="mt-1 text-xs text-faint">
           Usada na Timeline e no Painel. Padrão = data do arquivo.
         </p>
       </section>
 
       {/* Tags */}
       <section>
-        <h3 class="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-faint">
           Tags
         </h3>
         <div class="mt-2 flex flex-wrap gap-1.5">
           <For each={tags() ?? []}>
             {(t) => (
-              <span class="inline-flex items-center gap-1 rounded-full bg-accent-50 px-2 py-0.5 text-xs text-accent-700">
+              <span class="inline-flex items-center gap-1 rounded-full bg-accent-500/10 px-2 py-0.5 text-xs text-accent-300">
                 {t.category ? `${t.category}: ` : ""}
                 {t.name}
                 <button onClick={() => rmTag(t.id)} class="hover:text-red-500">
@@ -261,18 +261,18 @@ function StudyEditors(props: { studyId: number }) {
             value={tagName()}
             onInput={(e) => setTagName(e.currentTarget.value)}
             placeholder="nome da tag"
-            class="flex-1 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-accent-400"
+            class="flex-1 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
           />
           <select
             value={tagCat()}
             onChange={(e) => setTagCat(e.currentTarget.value)}
-            class="rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-accent-400"
+            class="rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
           >
             <For each={TAG_CATEGORIES}>{(c) => <option value={c}>{c}</option>}</For>
           </select>
           <button
             onClick={addTag}
-            class="rounded-md border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
+            class="rounded-md border border-line px-3 py-1 text-sm hover:bg-surface2"
           >
             +
           </button>
@@ -281,13 +281,13 @@ function StudyEditors(props: { studyId: number }) {
 
       {/* Coleções */}
       <section>
-        <h3 class="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-faint">
           Coleções
         </h3>
         <div class="mt-2 flex flex-wrap gap-1.5">
           <For each={studyCols() ?? []}>
             {(c) => (
-              <span class="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700">
+              <span class="inline-flex items-center gap-1 rounded-full bg-surface2 px-2 py-0.5 text-xs text-ink">
                 {c.name}
                 <button onClick={() => rmCol(c.id)} class="hover:text-red-500">
                   ✕
@@ -300,7 +300,7 @@ function StudyEditors(props: { studyId: number }) {
           <select
             value={colSel()}
             onChange={(e) => setColSel(e.currentTarget.value)}
-            class="flex-1 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-accent-400"
+            class="flex-1 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
           >
             <option value="">adicionar a coleção…</option>
             <For each={(allCols() ?? []).filter((c) => !inCol(c.id))}>
@@ -309,7 +309,7 @@ function StudyEditors(props: { studyId: number }) {
           </select>
           <button
             onClick={addCol}
-            class="rounded-md border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
+            class="rounded-md border border-line px-3 py-1 text-sm hover:bg-surface2"
           >
             +
           </button>
@@ -319,11 +319,11 @@ function StudyEditors(props: { studyId: number }) {
             value={newCol()}
             onInput={(e) => setNewCol(e.currentTarget.value)}
             placeholder="nova coleção"
-            class="flex-1 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-accent-400"
+            class="flex-1 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
           />
           <button
             onClick={addNewCol}
-            class="rounded-md border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
+            class="rounded-md border border-line px-3 py-1 text-sm hover:bg-surface2"
           >
             criar
           </button>
@@ -338,11 +338,11 @@ function StudyEditors(props: { studyId: number }) {
 function Meta(props: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <dt class="text-xs uppercase tracking-wide text-neutral-400">
+      <dt class="text-xs uppercase tracking-wide text-faint">
         {props.label}
       </dt>
       <dd
-        class="break-words text-neutral-700"
+        class="break-words text-ink"
         classList={{ "font-mono text-xs": props.mono }}
       >
         {props.value}

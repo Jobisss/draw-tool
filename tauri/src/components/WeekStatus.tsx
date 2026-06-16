@@ -17,28 +17,28 @@ export default function WeekStatus(props: { refresh?: number }) {
 
   return (
     <Show when={c()}>
-      <div class="mt-4 max-w-2xl rounded-md border border-neutral-200 bg-white p-4">
+      <div class="mt-4 max-w-2xl rounded-md border border-line bg-surface p-4">
         <Show
           when={c()!.goal > 0}
           fallback={
-            <p class="text-sm text-neutral-500">
+            <p class="text-sm text-muted">
               Defina uma meta semanal nos seus planos para acompanhar a
               consistência.
             </p>
           }
         >
           <div class="flex items-center justify-between text-sm">
-            <span class="font-medium text-neutral-700">
+            <span class="font-medium text-ink">
               Semana: {c()!.daysThisWeek}/{c()!.goal} dias
             </span>
             <Show when={c()!.streak > 0}>
-              <span class="font-medium text-accent-700">
+              <span class="font-medium text-accent-300">
                 🔥 {c()!.streak}{" "}
                 {c()!.streak === 1 ? "semana" : "semanas"}
               </span>
             </Show>
           </div>
-          <div class="mt-2 h-2 overflow-hidden rounded-full bg-neutral-100">
+          <div class="mt-2 h-2 overflow-hidden rounded-full bg-surface2">
             <div
               class="h-full rounded-full bg-accent-500 transition-all"
               style={{ width: `${pct()}%` }}
