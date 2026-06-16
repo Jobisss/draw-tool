@@ -4,7 +4,9 @@ Log vivo do desenvolvimento. Atualizar ao fim de cada fase/etapa.
 Spec em `documents/`. Instruções em `CLAUDE.md`.
 
 ## Estado atual
-**TODAS as fases (0-6) concluídas + redesign tema claro aplicado. App completo.**
+**v1 (FastAPI+HTMX) completa (referência). v2 (Tauri) FEATURE-COMPLETA — M0–M5 todos concluídos
+em 2026-06-16** (fundação, rotina/planner, biblioteca+import, evolução, notas+grafo, extras).
+Roda via `cd tauri && npm run tauri dev`. Falta só polimento + `tauri build` (instalador). Ver log abaixo.
 
 | Fase | Descrição | Status |
 |------|-----------|--------|
@@ -149,6 +151,292 @@ Backlog v1 (se voltar): file-watch, multi-vault, FTS5, render `.clip`, toggle cl
 - Roadmap RF01-26 completo.
 
 ---
+
+### 2026-06-16 — v2 M0-T1: Bootstrap do projeto Tauri
+- Feito: setup do toolchain (Rust 1.90 em C:, VS Community 2026 c/ VC Tools, WebView2, Node scoop —
+  todos verificados). `npm install` em `tauri/` (78 pkgs). `npm run build` (vite, typecheck OK).
+  `cargo check` em `src-tauri` OK (compilou ~30 crates Tauri em 2m06s, exit 0).
+- Verificado: build frontend verde; `cargo check` exit 0; `target/` gerado em E: (projeto). Falta
+  abrir janela via `npm run tauri dev` (verificação manual GUI).
+- Decisões: Rust toolchain fica em C: (decisão do usuário); build output (`target/`) no projeto E:.
+- Próximo: M0-T2 (Tailwind + tema claro/âmbar + layout sidebar).
+
+### 2026-06-16 — v2 M0-T2: Tailwind + tema base + layout
+- Feito: Tailwind v3 + postcss + autoprefixer (build via Vite) + `@solidjs/router`. `tailwind.config.js`
+  (acento `accent.*` = âmbar), `postcss.config.js`, `src/index.css` (`@tailwind` + base claro:
+  `bg-neutral-50 text-neutral-900`). `components/Sidebar.tsx` (nav 7 itens: Hoje, Biblioteca,
+  Timeline, Notas, Grafo, Planos, Configurações — `<A>` c/ activeClass âmbar), `components/Layout.tsx`
+  (sidebar + `<main>` outlet). `App.tsx` reescrito: `<Router root={Layout}>` + 7 rotas placeholder.
+  `index.tsx` importa `index.css`.
+- Verificado: `npm run build` OK (CSS 7.45kB purgado, typecheck verde); `tauri dev` sobe, janela
+  mostra sidebar + conteúdo, navegação client-side troca a view (rotas reais nos tickets M1+).
+- Decisões: Tailwind **v3** (estável, casa c/ arquivos do ticket) em vez do v4; usei `@solidjs/router`
+  desde já (mecanismo de nav do ticket — evita signal-switch descartável). App.css do scaffold ficou
+  órfão (não importado).
+- Próximo: M0-T3 (plugins Tauri + SQLite migrations, schema v2 em appDataDir).
+
+### 2026-06-16 — v2 M0-T3: Plugins Tauri + SQLite migrations
+- Feito: Cargo — `tauri-plugin-sql` (feature `sqlite`), `-fs`, `-dialog`, `-notification` (opener já).
+  npm — `@tauri-apps/plugin-{sql,fs,dialog,notification}`. `migrations/0001_init.sql`: schema v2
+  completo (14 tabelas — study c/ `course_id`+`lesson`, tag, study_tag, note, note_link, collection,
+  collection_study, reference, annotation, setting + planner v2: course, plan, plan_slot, day_log;
+  sem session/goal da v1) + índices. `lib.rs`: registra os 4 plugins + `add_migrations("sqlite:draw-study.db", …)`.
+  `capabilities/default.json`: permissões sql/fs/dialog/notification. `src/lib/db.ts`: `getDb`
+  (singleton), `select`/`execute` tipados, `countTables`. `App.tsx` loga nº de tabelas no boot.
+- Verificado: `npm run build` OK; `cargo check` OK (exit 0, compila sqlx/sql plugin, 1m32s);
+  `tauri dev` sobe → DB criado em `%APPDATA%\com.brconnect.tauri\draw-study.db` (+ WAL); contagem
+  via python = **14 tabelas** de usuário + `_sqlx_migrations` (migration aplicada).
+- Decisões: DB em appConfig/Roaming do identifier (`com.brconnect.tauri`), isolado do vault. Planner
+  v2 substitui plan/session/goal da v1 (conforme doc 06). `greet` do scaffold mantido (smoke).
+- Próximo: M0-T4 (tela Configurações: escolher pasta do vault via dialog → salvar em `setting.vault_path`).
+
+### 2026-06-16 — v2 M0-T4: Settings + escolher vault
+- Feito: `src/lib/settings.ts` (`getSetting`/`setSetting` via db.ts — upsert `ON CONFLICT`,
+  `VAULT_PATH_KEY`). `src/routes/Settings.tsx`: tela Configurações, mostra vault atual, botão
+  "Escolher pasta…" → `open({directory:true})` do `tauri-plugin-dialog` → salva em `setting.vault_path`.
+  `App.tsx`: rota `/config` → `Settings`. `capabilities/default.json`: `dialog:allow-open`.
+- Verificado: `npm run build` OK; `cargo check` OK; `tauri dev` sobe c/ dialog plugin. Upsert de
+  `setting` validado via roundtrip python (insert→A, upsert→B sem duplicar). Confirmado manual GUI:
+  escolher pasta + restart mantém o vault salvo (persistência OK).
+- Decisões: picker via plugin-dialog direto no front (sem command Rust `pick_vault` — ticket permitia).
+- M0 (Fundação) fechado. Próximo: M1-T1 (CRUD de planos — criar/listar/ativar/arquivar).
+
+### 2026-06-16 — v2 M1-T1: CRUD de planos
+- Feito: `src/lib/plans.ts` (`Plan`, `listPlans` ativo-primeiro, `createPlan(name, weeklyGoalDays)`,
+  `setPlanActive(id, active)`). `src/routes/Plans.tsx`: form (nome + meta semanal dias) + lista c/
+  badge ativo/arquivado + botão Ativar/Arquivar. `App.tsx`: rota `/planos` → `Plans`.
+- Verificado: `npm run build` OK (typecheck); CRUD validado via roundtrip python (cria 2, arquiva 1,
+  lista ordena ativo-primeiro, cleanup). HMR carregou a UI no dev em execução.
+- Decisões: arquivar = `active=0` (sem delete); ordem da lista: `active DESC, created_at DESC`.
+- Próximo: M1-T2 (command Rust `create_plan_folders(plan_id)` — cria pasta+subpastas no vault).
+
+### 2026-06-16 — v2 M1-T2: Pasta do plano no vault (Rust)
+- Feito: `src-tauri/src/vault.rs` — command `create_plan_folders(vault_path, plan_name, subfolders)`:
+  valida vault, sanitiza nome (bloqueia traversal/`/\:*?"<>|`), `create_dir_all` (idempotente),
+  retorna caminho. Registrado em `lib.rs` (`mod vault` + invoke_handler). `src/lib/api.ts`
+  (`createPlanFolders` via invoke, camelCase→snake_case). `plans.ts`: `setPlanFolder`. `Plans.tsx`:
+  auto-cria pasta no submit + botão "Criar pasta" (planos sem pasta) + mostra `folder_path` + erros.
+- Verificado: `npm run build` OK; `cargo check` OK; **end-to-end no app**: criados
+  `E:\draws\Desenhos Draw-a-Box` e `E:\draws\Desenhos Ariel` no vault, `folder_path` gravado no DB.
+- Decisões: escrita no vault só via Rust (AGENTS.md); FS direto com `std::fs` (sem precisar
+  permissão de plugin-fs, que é só p/ chamadas do front); subfolders fica `[]` até M1-T3 (slots).
+- Próximo: M1-T3 (template semanal — editar slots por dia-da-semana: técnica/lição/subpasta).
+
+### 2026-06-16 — v2 M1-T3: Template semanal (slots)
+- Feito: `plans.ts` — `PlanSlot`, `WEEKDAYS`, `getPlan`, `listSlots`, `addSlot`, `deleteSlot`.
+  `src/routes/PlanDetail.tsx` (rota `/planos/:id`): form (dia + técnica + subpasta + lição/nota) +
+  grade 7 dias (Seg..Dom) listando slots, remover por slot. `App.tsx`: rota `/planos/:id` → PlanDetail.
+  `Plans.tsx`: nome do plano vira link p/ detalhe.
+- Verificado: `npm run build` OK; slots validados via roundtrip python (Seg=gesture, Qua=anatomia,
+  ordenado por weekday, cleanup). HMR carregou no dev.
+- Decisões: "lição" mapeada p/ coluna `note` do `plan_slot` (schema não tem coluna lesson própria);
+  weekday 0=Seg..6=Dom (consistente c/ schema).
+- Próximo: M1-T4 (tela "Hoje" — agrega slots dos planos ativos p/ o dia-da-semana atual).
+
+### 2026-06-16 — v2 M1-T4: Tela "Hoje"
+- Feito: `src/lib/today.ts` — `currentWeekday` (JS getDay → 0=Seg..6=Dom via `(d+6)%7`),
+  `todayPractices` (JOIN `plan_slot`+`plan` WHERE `active=1` AND `weekday=hoje`). `src/routes/Today.tsx`:
+  cabeçalho com dia, lista de práticas (técnica/plano/subpasta/nota), empty-state "🌿 Dia de descanso"
+  c/ link p/ Planos. `App.tsx`: rota `/` → `Today` (era placeholder).
+- Verificado: `npm run build` OK; query validada via python (hoje=terça/weekday 1; retorna só slot do
+  dia, exclui outro dia; respeita `active=1`; cleanup). Mapeamento weekday JS↔schema confere.
+- Decisões: agrega todos os planos ativos (ordem por nome do plano); marcar-feito/day_log fica M1-T5.
+- Próximo: M1-T5 (concluir prática → `day_log` done + nota rápida + minutos).
+
+### 2026-06-16 — v2 M1-T5: Concluir prática (day_log)
+- Feito: `src/lib/logs.ts` — `DayLog`, `todayDate` (data local YYYY-MM-DD), `logsForDate`,
+  `logDone(plan,slot,date,note,min)`, `undoLog(slot,date)`. `Today.tsx` reescrito: sub-componente
+  `PracticeItem` c/ inputs opcionais (min + nota rápida) + botão marcar feito (✓), risca/linha ao
+  concluir, botão desfazer, contador "X/Y feito". Carrega práticas + logs do dia juntos.
+- Verificado: `npm run build` OK; `day_log` validado via python (logDone grava done/nota/min, undo
+  remove, cleanup). HMR no dev.
+- Decisões: "feito" = existe `day_log` p/ (slot_id, hoje); risca em vez de sumir (mostra progresso);
+  data local (não `toISOString` UTC) p/ não trocar de dia à noite.
+- Bugfix UX (não-ticket): Plans.tsx ganhou botão "Abrir" + nome em âmbar (link p/ PlanDetail não era
+  óbvio — usuário não achava o grid semanal). Ver [[tauri-dev-restart-port]] p/ gotcha de restart.
+- Próximo: M1-T6 (meta semanal + streak — painel "semana X/Y" + streak de semanas).
+
+### 2026-06-16 — v2 M1-T6: Meta + streak semanal (M1 fechado)
+- Feito: `src/lib/consistency.ts` — `mondayOf` (semana Seg-início), `weeklyGoal` (SUM
+  weekly_goal_days dos planos ativos), `consistency()` (bucket de dias distintos com log por semana
+  + streak de semanas consecutivas batendo meta; semana atual em andamento não quebra streak).
+  `src/components/WeekStatus.tsx`: painel "Semana X/Y dias" + barra + "🔥 N semanas", re-fetch via
+  prop `refresh`. Montado no topo de `Today.tsx` (version++ no reload → atualiza ao concluir/desfazer).
+- Verificado: `npm run build` OK; algoritmo de streak validado via python em 3 cenários (meta batida
+  2 semanas seguidas→streak 2; semana atual incompleta não quebra; 1 semana isolada→streak 1).
+- Decisões: meta = soma dos planos ativos **limitada a 7** (`min(soma,7)`) — X conta dias distintos
+  com prática (máx 7/semana), somar metas cruas estourava (ex: 4 planos = 18); streak conta semana
+  atual só se já bateu, mas não quebra se ainda em andamento; semana começa na segunda (weekday 0=Seg).
+- **M1 (núcleo da rotina) completo:** T1 planos · T2 pasta vault · T3 slots · T4 Hoje · T5 day_log ·
+  T6 meta/streak. App entrega a rotina utilizável (planner-cêntrico).
+- Extra (pedido do usuário): apagar plano + pasta. `vault.rs` command `delete_plan_folder`
+  (guarda: só apaga se a pasta estiver DENTRO do vault e não for o próprio vault; canonicalize +
+  starts_with). `plans.ts` `deletePlan` (cascata slots; day_log.plan_id→NULL). `Plans.tsx` botão
+  "Apagar" (vermelho) c/ confirm do plugin-dialog (warning, avisa que pasta+conteúdo somem
+  permanentemente). `capabilities`: `dialog:allow-confirm`. cargo check + build OK.
+- Próximo: M2-T1 (scan do vault em Rust — walk + hash + upsert em `study`).
+
+### 2026-06-16 — v2 M2-T1: Scan do vault (Rust)
+- Feito: `src-tauri/src/indexer.rs` — command `scan_vault(vault_path)`: walk recursivo (`walkdir`),
+  filtra extensões suportadas (png/jpg/jpeg/webp/bmp/psd/clip/procreate/kra/pdf/md), hash parcial
+  `sha1(size + primeiros 256KB)` (`sha1`+`hex`), devolve `Vec<StudyEntry>` (path/filename/format/
+  hash/mtime/size). `src/lib/indexer.ts` — `scanVault()`: invoca o command e faz diff/upsert em
+  `study` via plugin-sql (insert novos, update por hash/mtime/size, delete sumidos), title=stem.
+  Botão "Indexar vault" + stats em `Settings.tsx`. Registrado em `lib.rs`.
+- Verificado: build+cargo check OK; e2e no app — 4 arquivos no vault (3 suportados + 1 .txt),
+  scan → 3 studies (txt ignorado, hash/size/title corretos); apaguei 1 → rescan = idempotente
+  (2 inalterados) + removeu a linha do apagado. `study` reflete certo.
+- Decisões: **sem rusqlite** (conflito de `libsqlite3-sys` com sqlx do plugin-sql) — Rust só
+  walk+hash, o DB fica 100% no frontend via plugin-sql (dono único). Hash sempre recalculado no
+  Rust (256KB é barato); diff de mudança feito no TS. Timestamps (indexed_at/created_at) no front.
+- Nota: criados arquivos dummy de teste no vault (`estudo1.png`, `nota-solta.md`, `ignorar.txt`) —
+  bytes falsos, não são imagens válidas (thumbnails vão cair em placeholder no M2-T2).
+- Próximo: M2-T2 (thumbnails em Rust por formato → cache em appDataDir/thumbs).
+
+### 2026-06-16 — v2 M2-T2: Thumbnails (Rust)
+- Feito: `src-tauri/src/thumbnails.rs` — command `generate_thumbnail(study_path, format, hash)`:
+  dispatch por formato (raster png/jpg/jpeg/webp/bmp→`image`; procreate→zip `QuickLook/Thumbnail.png`;
+  kra→zip `mergedimage.png`/`preview.png`; psd→`psd` crate→RGBA; clip/md/pdf→None/placeholder),
+  resize `thumbnail(400,400)`, salva PNG em appDataDir/thumbs/<hash>.png (reusa cache se existe).
+  `api.ts` `generateThumbnail`; `indexer.ts` `generateMissingThumbnails` (UPDATE study.thumb_path);
+  Settings roda após scan + mostra contagem. Crates: image 0.25, zip 8.6, psd 0.3.5.
+- Verificado: build+cargo check OK; e2e — PNG real (600x400) → thumb 400x267 em cache + thumb_path
+  no DB; arquivos dummy (bytes falsos) e .md → None (placeholder, degradação graciosa).
+- Decisões: saída **PNG** (não webp — `image` não encoda webp confiável); **PDF adiado**
+  (pdfium-render exige lib nativa bundled, risco do doc 06) → cai em placeholder por ora;
+  thumbs em app_data_dir/thumbs. Ainda sem galeria → thumbs só no cache até M2-T3.
+- Próximo: M2-T3 (galeria + detalhe — grid de thumbnails via `convertFileSrc`, busca/filtro).
+
+### 2026-06-16 — v2 M2-T3: Galeria + detalhe
+- Feito: `src/lib/studies.ts` — `Study`, `listStudies({search,format})` (LIKE filename/title + filtro
+  formato), `getStudy`, `distinctFormats`, set `RASTER`. `components/Gallery.tsx` — grid responsivo
+  de cards (thumb via `convertFileSrc` ou placeholder com o formato), link p/ detalhe. `routes/
+  Library.tsx` (`/biblioteca`) — busca + select de formato + Gallery (createResource reativo).
+  `routes/StudyDetail.tsx` (`/biblioteca/:id`) — imagem cheia (raster=original via convertFileSrc,
+  senão thumb/placeholder) + metadados (arquivo/formato/tamanho/criado/caminho) + "Abrir no app
+  padrão" (`openPath` do plugin-opener). `App.tsx`: rotas wired. Janela 1100x740, título draw-study.
+- Config: `tauri.conf.json` habilita `assetProtocol` (scope `**` — app pessoal, vault em qualquer
+  lugar); capability `opener:allow-open-path`.
+- Verificado: build + cargo check OK; app sobe. (Visual a confirmar no app: galeria mostra a PNG real
+  com thumb + dummies como placeholder.)
+- Decisões: `convertFileSrc` (asset protocol) p/ thumb/original, sem rota HTTP nem base64; busca MVP
+  via LIKE.
+- Extra (pedido do usuário): `.md` renderizado como markdown no detalhe (não placeholder). Command
+  Rust `read_text_file(path)`; `markdown-it` (html:false) no front; `@tailwindcss/typography` (classe
+  `prose`) p/ estilizar. StudyDetail mostra markdown renderizado quando format=md, imagem caso
+  contrário. (markdown-it/prose serão reusados nas Notas/M4.)
+- Próximo: M2-T4 (importar arrastando → pasta do plano via command Rust `import_study`).
+
+### 2026-06-16 — v2 M2-T4: Importar → pasta do plano
+- Feito: `src-tauri/src/vault.rs` command `import_study(vault_path, dest_folder, src_path)` — COPIA
+  o arquivo p/ a pasta (guarda: destino dentro do vault; `unique_path` sufixa `(1)` se colidir,
+  nunca sobrescreve). `api.ts` `importStudy`. `components/DropZone.tsx`: drag-drop via
+  `onDragDropEvent` (path real) + botão "Selecionar arquivos" (dialog filtrado) → escolhe plano
+  (ativos c/ pasta) + subpasta → importa em lote. Montado no topo de `Library.tsx`; após importar
+  roda scan+thumbnails+refetch (aparece na galeria).
+- Verificado: build + cargo check OK; app sobe. (Visual a confirmar: arrastar/selecionar arquivo →
+  vai p/ vault/<plano>/<subpasta> → aparece na biblioteca.)
+- Decisões: **copia** (não move) — RNF/AGENTS: não apaga original sem confirmação; `move_study`
+  adiado; reindex via scanVault (re-walk completo, ok p/ vault pessoal).
+- Próximo: M2-T5 (tags, coleções, vínculo a curso).
+
+### 2026-06-16 — v2 M2-T5: Tags, coleções, curso (M2 fechado)
+- Feito: `lib/tags.ts` (find-or-create tag por name+category, vincular/desvincular study_tag,
+  `TAG_CATEGORIES`), `lib/collections.ts` (CRUD coleção + collection_study + studiesInCollection),
+  `lib/courses.ts` (listar/criar curso + `setStudyCourse`). `StudyDetail` ganhou `<StudyEditors>`:
+  tags (chips+add por categoria), coleções (chips+add existente/criar nova), curso+lição (select+
+  salvar/criar). `studies.ts listStudies`: busca casa tag (EXISTS) + filtro `collectionId`.
+  `Library`: placeholder "nome ou tag" + filtro de coleção. Nova rota `/colecoes` (`Collections.tsx`:
+  criar/apagar coleção + ver estudos via Gallery) + item "Coleções" no Sidebar.
+- Verificado: `npm run build` OK; SQL validado via python (busca por tag acha; coleção lista certo;
+  curso/lição gravam; cleanup). HMR no dev.
+- Decisões: tag única por (name,category); apagar coleção = cascade collection_study (não toca
+  vault/estudos); curso/lição em colunas do próprio `study`.
+- **M2 (Biblioteca + import) completo:** T1 scan · T2 thumbnails · T3 galeria/detalhe · T4 import ·
+  T5 tags/coleções/curso. Mais extras: .md renderizado, apagar plano+pasta.
+- Próximo: M3-T1 (timeline contínua — scroll cronológico agrupado por mês).
+
+### 2026-06-16 — v2 M3: Timeline + Dashboard (M3 fechado)
+- M3-T1 (Timeline): `lib/timeline.ts` (`timelineStudies` + filtro por técnica, `groupByMonth` com
+  rótulo PT, `techniqueTags`). `routes/Timeline.tsx` (`/timeline`): filtro de técnica + seções por
+  mês (header sticky) reusando `<Gallery>`. Rota wired.
+- M3-T2 (Dashboard): `lib/stats.ts` (`dashboardStats` = nº estudos + min total + consistency;
+  `logHeatmap` mapa date→count; `studiesByTechnique`). `routes/Dashboard.tsx` (`/painel`): 4 cards
+  (streak/semana/horas/estudos) + heatmap 53 semanas (níveis âmbar) + barras por técnica. Item
+  "Painel" no Sidebar.
+- Verificado: `npm run build` OK (T1+T2); stats validados via python (estudos, 45min, heatmap por
+  dia, por técnica). HMR no dev.
+- Decisões: timeline filtra por tag categoria 'tecnica'; horas = SUM(duration_min)/60 dos day_log
+  feitos; heatmap reusa `mondayOf`+`todayDate`, classes âmbar literais (JIT do Tailwind).
+- Próximo: M4-T1 (notas markdown + wikilinks/backlinks).
+
+### 2026-06-16 — v2 M4-T1: Notas markdown + wikilinks/backlinks
+- Feito: `lib/notes.ts` — CRUD (`listNotes`/`getNote`/`createNote`/`updateNote`/`deleteNote`),
+  `parseWikilinks`, `updateNote` re-sincroniza `note_link` (resolve `[[Título]]`→id case-insensitive,
+  regrava src), `backlinks`. `routes/Notes.tsx` (`/notas`): lista + criar (navega ao detalhe).
+  `routes/NoteDetail.tsx` (`/notas/:id`): editor (título + textarea md) + preview markdown-it com
+  `[[Título]]`→link `/notas/:id` (resolvido) clicável (solid-router intercepta), backlinks, salvar/
+  apagar. Rotas wired (Notas já no Sidebar).
+- Verificado: `npm run build` OK; wikilink/backlink validados via python (A→[[B]] gera backlink em B;
+  cascade limpa note_link). HMR no dev.
+- Decisões: link só se a nota-alvo existe (senão texto puro); preview em coluna lado-a-lado com o
+  editor; `prose` (typography) reusa o de M2.
+- Extra: campo **Data do estudo** editável no detalhe (`setStudyDate` → `study.created_at`); padrão
+  = mtime do arquivo, alimenta Timeline/Painel. Bugfix Timeline: `createResource` com source
+  `undefined` desliga a busca no Solid → troquei p/ source objeto sempre-truthy (`{tech}`).
+- Próximo: M4-T2 (grafo de notas — nós/arestas de note_link, clique navega).
+
+### 2026-06-16 — v2 M4-T2: Grafo de notas (M4 fechado)
+- Feito: `notes.ts` `allLinks()` (arestas note_link). `routes/Graph.tsx` (`/grafo`): grafo SVG
+  custom — layout circular dos nós (notas), linhas = note_link, clique no nó navega p/ `/notas/:id`.
+  Rota wired (Grafo já no Sidebar).
+- Verificado: `npm run build` OK; dados reusam note/note_link (validados no M4-T1).
+- Decisões: **SVG custom** em vez de vis-network/cosmos — grafo de notas é pequeno, evita dep pesada
+  (AGENTS: leve). Layout circular simples (sem física); pode evoluir depois se necessário.
+- **M4 (Conhecimento):** T1 notas+wikilinks+backlinks · T2 grafo. (T3 abaixo.)
+
+### 2026-06-16 — v2 M4-T3: Referências + anotações na imagem (M4 fechado)
+- Feito: `lib/refs.ts` (CRUD `reference` URL+legenda; CRUD `annotation` x/y em %).
+  `components/ReferenceList.tsx` (lista refs, abrir via `openUrl`, add/remover) montado no StudyEditors.
+  `components/ImageAnnotator.tsx` (substitui `<img>` no detalhe): clique na imagem cria pin pendente
+  c/ input → grava x%,y%; pins existentes clicáveis (mostra texto + remover); posição em % =
+  responsiva. `capabilities`: `opener:allow-open-url`.
+- Verificado: build + cargo check OK; refs/anotações validadas via python (URL+legenda; x=42.5/y=68%).
+- Decisões: anotação em coordenada % (responsiva ao redimensionar); refs por URL externa (vault
+  read-write controlado, sem upload); pin via input inline (sem window.prompt).
+- **M4 (Conhecimento) completo:** T1 · T2 · T3.
+- Próximo: M5 (extras) — T1 deck+timer · T2 relatório · T3 notificação diária.
+
+### 2026-06-16 — v2 M5-T1: Deck de sorteio + timer
+- Feito: `lib/practice.ts` `randomStudies(count, techniqueTagId?)` (raster `ORDER BY RANDOM()`,
+  filtro por técnica via study_tag). `routes/Practice.tsx` (`/praticar`): setup (técnica + qtd +
+  tempo 30s/1m/2m/5m) → sessão com imagem (`convertFileSrc`), contagem regressiva + auto-advance,
+  controles anterior/pausar/pular/encerrar, contador X/Y. Item "Praticar" no Sidebar.
+- Verificado: `npm run build` OK; query raster validada via python (só raster, .md fora).
+- Decisões: timer client-side (`setInterval`, limpo no onCleanup); deck via plugin-sql (sem command
+  Rust `random_studies`); fim do deck encerra a sessão.
+- Extra: deck agora filtra por **qualquer tag** (não só técnica) — `listTags` no dropdown
+  (`categoria: nome`); fluxo: taguear na Biblioteca → sortear por tag em Praticar.
+
+### 2026-06-16 — v2 M5-T2 + M5-T3: Relatório + Notificação (M5 fechado, v2 feature-completa)
+- M5-T2 (Relatório): `lib/report.ts` `reportData(start,end)` (dias praticados, horas, estudos
+  criados, por técnica — ranges em day_log.date e date(study.created_at)). `routes/Report.tsx`
+  (`/relatorio`): range de datas (default mês atual→hoje) + cards + tabela por técnica + "Imprimir/
+  PDF" (`window.print()`). CSS `@media print { .no-print }` + sidebar marcada `no-print`.
+- M5-T3 (Notificação): `lib/notify.ts` (`ensurePermission`, `sendReminder`, `startReminderLoop`
+  checa horário a cada 30s enquanto app aberto, 1x/dia). Settings: ativar + horário + "Testar".
+  `App` inicia o loop no boot. `capabilities`: notification allow-notify/is-permission-granted/
+  request-permission. Itens "Praticar"/"Relatório" no Sidebar.
+- Verificado: build + cargo check OK; relatório validado via python (dias/min/estudos no range).
+- Decisões: lembrete é "enquanto app aberto" (agendamento OS com app fechado fica fora de escopo);
+  relatório imprime via webview (sem lib PDF), igual v1.
+- **🎉 v2 feature-completa: M0 (fundação) · M1 (rotina) · M2 (biblioteca/import) · M3 (evolução) ·
+  M4 (conhecimento) · M5 (extras).** Extras: .md renderizado, apagar plano+pasta, data editável,
+  deck por tag.
+- Próximo (pós-MVP): polimento, ícone/título do app, `npm run tauri build` (instalador), revisar
+  escopo do asset protocol (`**`), tratar overwrite de created_at no rescan, PDF thumbnails (pdfium).
+
+## Template de entrada (copiar p/ cada fase)
 
 ## Template de entrada (copiar p/ cada fase)
 ```
