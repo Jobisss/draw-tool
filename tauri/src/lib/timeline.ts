@@ -1,6 +1,5 @@
 import { select } from "./db";
 import type { Study } from "./studies";
-import type { Tag } from "./tags";
 
 export type MonthGroup = { month: string; label: string; studies: Study[] };
 
@@ -14,27 +13,27 @@ function monthLabel(ym: string): string {
   return `${MESES[(m || 1) - 1]} ${y}`;
 }
 
-/** Tags de categoria 'tecnica' (p/ o filtro). */
-export async function techniqueTags(): Promise<Tag[]> {
-  return select<Tag>(
-    "SELECT * FROM tag WHERE category = 'tecnica' ORDER BY name",
-  );
-}
-
+/** Estudos p/ a timeline, filtrando por tag (qualquer) e/ou plano (via day_log). */
 export async function timelineStudies(
-  techniqueTagId?: number,
+  opts: { tagId?: number; planId?: number } = {},
 ): Promise<Study[]> {
-  if (techniqueTagId) {
-    return select<Study>(
-      `SELECT s.* FROM study s
-         JOIN study_tag st ON st.study_id = s.id
-        WHERE st.tag_id = $1 AND s.created_at IS NOT NULL
-        ORDER BY s.created_at DESC`,
-      [techniqueTagId],
+  const where: string[] = ["s.created_at IS NOT NULL"];
+  const params: unknown[] = [];
+  if (opts.tagId) {
+    params.push(opts.tagId);
+    where.push(
+      `EXISTS(SELECT 1 FROM study_tag st WHERE st.study_id = s.id AND st.tag_id = $${params.length})`,
+    );
+  }
+  if (opts.planId) {
+    params.push(opts.planId);
+    where.push(
+      `EXISTS(SELECT 1 FROM day_log dl WHERE dl.study_id = s.id AND dl.plan_id = $${params.length})`,
     );
   }
   return select<Study>(
-    "SELECT * FROM study WHERE created_at IS NOT NULL ORDER BY created_at DESC",
+    `SELECT s.* FROM study s WHERE ${where.join(" AND ")} ORDER BY s.created_at DESC`,
+    params,
   );
 }
 

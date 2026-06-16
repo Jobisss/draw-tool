@@ -13,7 +13,6 @@ import Dashboard from "./routes/Dashboard";
 import Notes from "./routes/Notes";
 import NoteDetail from "./routes/NoteDetail";
 import Graph from "./routes/Graph";
-import Practice from "./routes/Practice";
 import Report from "./routes/Report";
 import { countTables } from "./lib/db";
 import { startReminderLoop } from "./lib/notify";
@@ -50,7 +49,6 @@ export default function App() {
       <Route path="/notas" component={Notes} />
       <Route path="/notas/:id" component={NoteDetail} />
       <Route path="/grafo" component={Graph} />
-      <Route path="/praticar" component={Practice} />
       <Route path="/relatorio" component={Report} />
       <Route path="/planos" component={Plans} />
       <Route path="/planos/:id" component={PlanDetail} />

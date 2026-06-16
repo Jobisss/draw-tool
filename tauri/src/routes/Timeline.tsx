@@ -1,19 +1,23 @@
 import { createSignal, createResource, For, Show } from "solid-js";
 import Gallery from "../components/Gallery";
-import {
-  timelineStudies,
-  groupByMonth,
-  techniqueTags,
-} from "../lib/timeline";
+import { timelineStudies, groupByMonth } from "../lib/timeline";
+import { listPlans } from "../lib/plans";
+import { listTags } from "../lib/tags";
 
 export default function Timeline() {
-  const [tech, setTech] = createSignal("");
+  const [planId, setPlanId] = createSignal("");
+  const [tagId, setTagId] = createSignal("");
 
   const [studies] = createResource(
-    () => ({ tech: tech() }),
-    (s) => timelineStudies(s.tech ? Number(s.tech) : undefined),
+    () => ({ plan: planId(), tag: tagId() }),
+    (s) =>
+      timelineStudies({
+        planId: s.plan ? Number(s.plan) : undefined,
+        tagId: s.tag ? Number(s.tag) : undefined,
+      }),
   );
-  const [techs] = createResource(techniqueTags);
+  const [plans] = createResource(listPlans);
+  const [tags] = createResource(listTags);
 
   const groups = () => groupByMonth(studies() ?? []);
 
@@ -24,15 +28,30 @@ export default function Timeline() {
         Evolução cronológica dos estudos, agrupada por mês.
       </p>
 
-      <div class="mt-6 flex items-center gap-3">
+      <div class="mt-6 flex flex-wrap items-center gap-3">
         <select
-          value={tech()}
-          onChange={(e) => setTech(e.currentTarget.value)}
+          value={planId()}
+          onChange={(e) => setPlanId(e.currentTarget.value)}
           class="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
         >
-          <option value="">Todas as técnicas</option>
-          <For each={techs() ?? []}>
-            {(t) => <option value={t.id}>{t.name}</option>}
+          <option value="">Todos os planos</option>
+          <For each={plans() ?? []}>
+            {(p) => <option value={p.id}>{p.name}</option>}
+          </For>
+        </select>
+        <select
+          value={tagId()}
+          onChange={(e) => setTagId(e.currentTarget.value)}
+          class="rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-accent-400"
+        >
+          <option value="">Todas as tags</option>
+          <For each={tags() ?? []}>
+            {(t) => (
+              <option value={t.id}>
+                {t.category ? `${t.category}: ` : ""}
+                {t.name}
+              </option>
+            )}
           </For>
         </select>
         <Show when={studies()}>
@@ -46,7 +65,7 @@ export default function Timeline() {
         when={groups().length > 0}
         fallback={
           <p class="mt-8 text-sm text-neutral-400">
-            Nenhum estudo com data ainda. Indexe o vault em Configurações.
+            Nenhum estudo com data no filtro atual.
           </p>
         }
       >

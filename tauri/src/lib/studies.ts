@@ -49,6 +49,11 @@ export async function listStudies(
   return select<Study>(sql, params);
 }
 
+/** Remove o estudo do índice (cascade tags/coleções/refs/anotações; day_log.study_id→NULL). */
+export async function deleteStudy(id: number): Promise<void> {
+  await execute("DELETE FROM study WHERE id = $1", [id]);
+}
+
 /** Define a data do estudo (created_at). `date` = YYYY-MM-DD; null limpa. */
 export async function setStudyDate(
   id: number,
@@ -59,6 +64,13 @@ export async function setStudyDate(
 
 export async function getStudy(id: number): Promise<Study | null> {
   const rows = await select<Study>("SELECT * FROM study WHERE id = $1", [id]);
+  return rows[0] ?? null;
+}
+
+export async function getStudyByPath(path: string): Promise<Study | null> {
+  const rows = await select<Study>("SELECT * FROM study WHERE path = $1", [
+    path,
+  ]);
   return rows[0] ?? null;
 }
 

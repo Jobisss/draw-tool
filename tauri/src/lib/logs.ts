@@ -38,6 +38,17 @@ export async function logDone(
   return res.lastInsertId as number;
 }
 
+/** Vincula um estudo (arte anexada) a um log de execução. */
+export async function setLogStudy(
+  logId: number,
+  studyId: number,
+): Promise<void> {
+  await execute("UPDATE day_log SET study_id = $1 WHERE id = $2", [
+    studyId,
+    logId,
+  ]);
+}
+
 /** Desfaz: remove o log de uma prática (slot) num dia. */
 export async function undoLog(slotId: number, date: string): Promise<void> {
   await execute("DELETE FROM day_log WHERE slot_id = $1 AND date = $2", [

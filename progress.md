@@ -436,7 +436,31 @@ Backlog v1 (se voltar): file-watch, multi-vault, FTS5, render `.clip`, toggle cl
 - Próximo (pós-MVP): polimento, ícone/título do app, `npm run tauri build` (instalador), revisar
   escopo do asset protocol (`**`), tratar overwrite de created_at no rescan, PDF thumbnails (pdfium).
 
-## Template de entrada (copiar p/ cada fase)
+### 2026-06-16 — v2 M6: Melhorias pós-MVP (feedback do usuário)
+- M6-T1: removido "Praticar" (rota/sidebar/Practice.tsx/practice.ts).
+- M6-T2: heatmap do Painel com hover → mostra data + nº de práticas (linha de info; sem `title`).
+- M6-T3: autocomplete de `[[` nas Notas — dropdown filtrável de títulos; selecionar insere `[[Título]]`.
+- M6-T4: Coleções auto-selecionam a 1ª + mostram contagem; galeria das imagens da coleção.
+- M6-T5: apagar estudo na Biblioteca → confirm → **apaga arquivo do vault** (Rust `delete_file`,
+  guarda dentro do vault) + `deleteStudy` (cascade tags/coleções/refs/anotações; day_log.study_id→NULL).
+- M6-T6: planner funcional. Curso removido (== Plano; seção tirada do StudyDetail, colunas ficam no
+  DB sem uso). **Matérias = tags.** Anexar arte à execução: tela Hoje, prática concluída → "anexar
+  arte" → `import_study` p/ pasta do plano (+subpasta do slot) → scan+thumb → `day_log.study_id` →
+  aparece na Biblioteca (link "ver na biblioteca"). Helpers: `today.folder_path`, `setLogStudy`,
+  `getStudyByPath`.
+- M6-T7: Timeline filtra por **Plano** (via day_log.study_id→plan) e/ou **qualquer tag** (2 selects).
+- Verificado: `npm run build` + `cargo check` OK (T5 command Rust). Validação GUI pendente do usuário.
+- Decisões: apagar = permanente (escolha do usuário); matérias = tags (sem entidade nova); attach
+  reusa import_study; orphan `courses.ts` deletado.
+
+### 2026-06-16 — v2 M6 fixes (feedback)
+- **Bug attach:** `import_study` retornava caminho canonicalizado (`\\?\E:\…`) ≠ caminho do scan →
+  `getStudyByPath` não casava → `day_log.study_id` nunca era setado (sem indicador). Fix: retornar
+  `dest.join(filename)` (normal); canonicalize só p/ a guarda de segurança. Agora liga + mostra
+  **thumbnail** da arte anexada no Hoje (não só texto). (Anexos feitos antes do fix não vincularam —
+  re-anexar.)
+- **Coleções UX:** chips agora só selecionam (sem X que apagava por engano); apagar virou botão
+  "Apagar coleção" dedicado, com confirm, ao lado da galeria. Mostra "<nome> · N imagens".
 
 ## Template de entrada (copiar p/ cada fase)
 ```

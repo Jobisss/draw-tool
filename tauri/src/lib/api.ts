@@ -30,6 +30,11 @@ export function importStudy(
   return invoke<string>("import_study", { vaultPath, destFolder, srcPath });
 }
 
+/** Apaga um arquivo do vault (guarda no Rust). Permanente. */
+export function deleteFile(vaultPath: string, filePath: string): Promise<void> {
+  return invoke("delete_file", { vaultPath, filePath });
+}
+
 /** Lê um arquivo de texto do vault (ex.: .md). */
 export function readTextFile(path: string): Promise<string> {
   return invoke<string>("read_text_file", { path });

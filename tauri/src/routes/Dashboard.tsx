@@ -1,4 +1,4 @@
-import { createResource, For, Show } from "solid-js";
+import { createResource, createSignal, For, Show } from "solid-js";
 import { dashboardStats, logHeatmap, studiesByTechnique } from "../lib/stats";
 import { mondayOf } from "../lib/consistency";
 import { todayDate } from "../lib/logs";
@@ -17,6 +17,14 @@ export default function Dashboard() {
   const [stats] = createResource(dashboardStats);
   const [heat] = createResource(logHeatmap);
   const [techs] = createResource(studiesByTechnique);
+  const [hover, setHover] = createSignal<{ date: string; count: number } | null>(
+    null,
+  );
+
+  const fmtDate = (iso: string) => {
+    const [y, m, d] = iso.split("-");
+    return `${d}/${m}/${y}`;
+  };
 
   // grade do heatmap: WEEKS colunas (segunda-início) terminando nesta semana
   const columns = () => {
@@ -61,8 +69,21 @@ export default function Dashboard() {
 
       {/* Heatmap */}
       <section class="mt-8">
-        <h2 class="text-sm font-medium text-neutral-700">Atividade</h2>
-        <div class="mt-3 flex gap-[3px] overflow-x-auto rounded-md border border-neutral-200 bg-white p-3">
+        <div class="flex items-baseline justify-between">
+          <h2 class="text-sm font-medium text-neutral-700">Atividade</h2>
+          <span class="text-xs text-neutral-500">
+            <Show when={hover()} fallback="passe o mouse num dia">
+              {fmtDate(hover()!.date)} ·{" "}
+              {hover()!.count === 1
+                ? "1 prática"
+                : `${hover()!.count} práticas`}
+            </Show>
+          </span>
+        </div>
+        <div
+          class="mt-3 flex gap-[3px] overflow-x-auto rounded-md border border-neutral-200 bg-white p-3"
+          onMouseLeave={() => setHover(null)}
+        >
           <For each={columns()}>
             {(col) => (
               <div class="flex flex-col gap-[3px]">
@@ -70,7 +91,9 @@ export default function Dashboard() {
                   {(cell) => (
                     <div
                       class={`h-3 w-3 rounded-sm ${heatClass(cell.count)}`}
-                      title={`${cell.date}: ${cell.count}`}
+                      onMouseEnter={() =>
+                        setHover({ date: cell.date, count: cell.count })
+                      }
                     />
                   )}
                 </For>

@@ -12,7 +12,6 @@ const NAV: NavItem[] = [
   { path: "/relatorio", label: "Relatório", icon: "⎙" },
   { path: "/notas", label: "Notas", icon: "✎" },
   { path: "/grafo", label: "Grafo", icon: "⬡" },
-  { path: "/praticar", label: "Praticar", icon: "✦" },
   { path: "/planos", label: "Planos", icon: "▤" },
   { path: "/config", label: "Configurações", icon: "⚙" },
 ];

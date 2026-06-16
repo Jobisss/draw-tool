@@ -35,6 +35,7 @@ pub fn run() {
             vault::delete_plan_folder,
             vault::read_text_file,
             vault::import_study,
+            vault::delete_file,
             indexer::scan_vault,
             thumbnails::generate_thumbnail
         ])

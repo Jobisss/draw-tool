@@ -1,4 +1,5 @@
-import { createSignal, createResource, For, Show } from "solid-js";
+import { createSignal, createResource, createEffect, For, Show } from "solid-js";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import Gallery from "../components/Gallery";
 import {
   listCollections,
@@ -17,6 +18,14 @@ export default function Collections() {
     (id) => studiesInCollection(id as number),
   );
 
+  // auto-seleciona a primeira coleção p/ já mostrar as imagens
+  createEffect(() => {
+    const list = cols();
+    if (list && list.length > 0 && selected() === null) {
+      setSelected(list[0].id);
+    }
+  });
+
   async function add(e: Event) {
     e.preventDefault();
     if (!name().trim()) return;
@@ -24,11 +33,18 @@ export default function Collections() {
     setName("");
     refetch();
   }
-  async function remove(id: number) {
+  async function remove(id: number, name: string) {
+    const ok = await confirm(
+      `Apagar a coleção "${name}"?\n\nOs estudos NÃO são apagados — só a coleção e seus vínculos.`,
+      { title: "Apagar coleção", kind: "warning", okLabel: "Apagar" },
+    );
+    if (!ok) return;
     await deleteCollection(id);
     if (selected() === id) setSelected(null);
     refetch();
   }
+
+  const currentName = () => cols()?.find((c) => c.id === selected())?.name ?? "";
 
   return (
     <div class="p-8">
@@ -55,29 +71,37 @@ export default function Collections() {
       <div class="mt-6 flex flex-wrap gap-2">
         <For each={cols() ?? []}>
           {(c) => (
-            <span
-              class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm transition-colors"
+            <button
+              type="button"
+              onClick={() => setSelected(c.id)}
+              class="rounded-full border px-3 py-1 text-sm transition-colors"
               classList={{
-                "border-accent-400 bg-accent-50 text-accent-700":
+                "border-accent-400 bg-accent-50 text-accent-700 font-medium":
                   selected() === c.id,
-                "border-neutral-200 bg-white text-neutral-700":
+                "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50":
                   selected() !== c.id,
               }}
             >
-              <button onClick={() => setSelected(c.id)}>{c.name}</button>
-              <button
-                onClick={() => remove(c.id)}
-                class="text-neutral-400 hover:text-red-500"
-                title="Apagar coleção"
-              >
-                ✕
-              </button>
-            </span>
+              {c.name}
+            </button>
           )}
         </For>
       </div>
 
       <Show when={selected()}>
+        <div class="mt-6 flex items-center justify-between">
+          <p class="text-sm text-neutral-500">
+            <span class="font-medium text-neutral-700">{currentName()}</span> ·{" "}
+            {(studies() ?? []).length} imagem(ns)
+          </p>
+          <button
+            type="button"
+            onClick={() => remove(selected()!, currentName())}
+            class="rounded-md border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+          >
+            Apagar coleção
+          </button>
+        </div>
         <Gallery studies={studies() ?? []} />
       </Show>
     </div>

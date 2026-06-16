@@ -5,12 +5,14 @@ import {
   For,
   Show,
 } from "solid-js";
-import { useParams, A } from "@solidjs/router";
+import { useParams, A, useNavigate } from "@solidjs/router";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { openPath } from "@tauri-apps/plugin-opener";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import MarkdownIt from "markdown-it";
-import { getStudy, setStudyDate, RASTER } from "../lib/studies";
-import { readTextFile } from "../lib/api";
+import { getStudy, setStudyDate, deleteStudy, RASTER } from "../lib/studies";
+import { readTextFile, deleteFile } from "../lib/api";
+import { getSetting, VAULT_PATH_KEY } from "../lib/settings";
 import {
   tagsForStudy,
   addTagToStudy,
@@ -24,7 +26,6 @@ import {
   removeFromCollection,
   createCollection,
 } from "../lib/collections";
-import { listCourses, createCourse, setStudyCourse } from "../lib/courses";
 import ImageAnnotator from "../components/ImageAnnotator";
 import ReferenceList from "../components/ReferenceList";
 
@@ -44,7 +45,25 @@ function human(bytes: number | null): string {
 
 export default function StudyDetail() {
   const params = useParams();
+  const navigate = useNavigate();
   const [study] = createResource(() => Number(params.id), getStudy);
+
+  async function removeStudy(path: string, id: number) {
+    const ok = await confirm(
+      `Apagar este estudo?\n\n⚠️ O arquivo será apagado PERMANENTEMENTE do vault:\n${path}`,
+      { title: "Apagar estudo", kind: "warning", okLabel: "Apagar" },
+    );
+    if (!ok) return;
+    // remove do índice primeiro (é o que importa); arquivo é best-effort
+    await deleteStudy(id);
+    try {
+      const vault = await getSetting(VAULT_PATH_KEY);
+      if (vault) await deleteFile(vault, path);
+    } catch (e) {
+      console.error("falha ao apagar o arquivo (pode estar em uso):", e);
+    }
+    navigate("/biblioteca");
+  }
 
   const isMd = () => study()?.format === "md";
   const [mdText] = createResource(
@@ -109,13 +128,22 @@ export default function StudyDetail() {
                 />
                 <Meta label="Caminho" value={s().path} mono />
               </dl>
-              <button
-                type="button"
-                onClick={() => openPath(s().path)}
-                class="mt-5 rounded-md bg-accent-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-600"
-              >
-                Abrir no app padrão
-              </button>
+              <div class="mt-5 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => openPath(s().path)}
+                  class="rounded-md bg-accent-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-600"
+                >
+                  Abrir no app padrão
+                </button>
+                <button
+                  type="button"
+                  onClick={() => removeStudy(s().path, s().id)}
+                  class="rounded-md border border-red-200 px-4 py-2 text-sm text-red-600 transition-colors hover:bg-red-50"
+                >
+                  Apagar
+                </button>
+              </div>
 
               <StudyEditors studyId={s().id} />
             </div>
@@ -136,7 +164,6 @@ function StudyEditors(props: { studyId: number }) {
     () => props.studyId,
     collectionsForStudy,
   );
-  const [courses, { refetch: refetchCourses }] = createResource(listCourses);
   const [study, { refetch: refetchStudy }] = createResource(
     () => props.studyId,
     getStudy,
@@ -146,19 +173,12 @@ function StudyEditors(props: { studyId: number }) {
   const [tagCat, setTagCat] = createSignal(TAG_CATEGORIES[0]);
   const [colSel, setColSel] = createSignal<string>("");
   const [newCol, setNewCol] = createSignal("");
-  const [courseId, setCourseId] = createSignal<string>("");
-  const [lesson, setLesson] = createSignal("");
-  const [newCourse, setNewCourse] = createSignal("");
   const [date, setDate] = createSignal("");
 
-  // semeia curso/lição/data quando o estudo carrega
+  // semeia a data quando o estudo carrega
   createEffect(() => {
     const s = study();
-    if (s) {
-      setCourseId(s.course_id != null ? String(s.course_id) : "");
-      setLesson(s.lesson ?? "");
-      setDate(s.created_at?.slice(0, 10) ?? "");
-    }
+    if (s) setDate(s.created_at?.slice(0, 10) ?? "");
   });
 
   async function saveDate(value: string) {
@@ -196,23 +216,6 @@ function StudyEditors(props: { studyId: number }) {
   async function rmCol(id: number) {
     await removeFromCollection(id, props.studyId);
     refetchStudyCols();
-  }
-
-  async function saveCourse() {
-    await setStudyCourse(
-      props.studyId,
-      courseId() ? Number(courseId()) : null,
-      lesson().trim() || null,
-    );
-    refetchStudy();
-  }
-  async function addNewCourse() {
-    const name = newCourse().trim();
-    if (!name) return;
-    const id = await createCourse(name);
-    setNewCourse("");
-    await refetchCourses();
-    setCourseId(String(id));
   }
 
   const inCol = (id: number) => studyCols()?.some((c) => c.id === id);
@@ -320,51 +323,6 @@ function StudyEditors(props: { studyId: number }) {
           />
           <button
             onClick={addNewCol}
-            class="rounded-md border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
-          >
-            criar
-          </button>
-        </div>
-      </section>
-
-      {/* Curso / lição */}
-      <section>
-        <h3 class="text-xs font-semibold uppercase tracking-wide text-neutral-400">
-          Curso
-        </h3>
-        <div class="mt-2 flex gap-2">
-          <select
-            value={courseId()}
-            onChange={(e) => setCourseId(e.currentTarget.value)}
-            class="flex-1 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-accent-400"
-          >
-            <option value="">— sem curso —</option>
-            <For each={courses() ?? []}>
-              {(c) => <option value={c.id}>{c.name}</option>}
-            </For>
-          </select>
-          <input
-            value={lesson()}
-            onInput={(e) => setLesson(e.currentTarget.value)}
-            placeholder="lição"
-            class="w-24 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-accent-400"
-          />
-          <button
-            onClick={saveCourse}
-            class="rounded-md border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
-          >
-            salvar
-          </button>
-        </div>
-        <div class="mt-2 flex gap-2">
-          <input
-            value={newCourse()}
-            onInput={(e) => setNewCourse(e.currentTarget.value)}
-            placeholder="novo curso"
-            class="flex-1 rounded-md border border-neutral-200 px-2 py-1 text-sm outline-none focus:border-accent-400"
-          />
-          <button
-            onClick={addNewCourse}
             class="rounded-md border border-neutral-300 px-3 py-1 text-sm hover:bg-neutral-100"
           >
             criar

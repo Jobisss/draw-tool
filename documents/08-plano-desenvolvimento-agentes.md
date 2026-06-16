@@ -203,3 +203,33 @@ M0-T1 → M0-T2 → M0-T3 → M0-T4 → **M1 inteiro** (entrega rotina utilizáv
 ## Checklist por ticket (cole no commit)
 - [ ] escopo só do ticket  - [ ] `npm run build` ok  - [ ] `cargo check` ok
 - [ ] `tauri dev` sobe  - [ ] aceite atendido  - [ ] `progress.md` atualizado
+
+---
+
+## M6 — Melhorias pós-MVP (feedback do usuário, 2026-06-16)
+
+### M6-T1 — Remover "Praticar" · P
+- Tirar rota `/praticar`, item do Sidebar, `routes/Practice.tsx`, `lib/practice.ts`.
+
+### M6-T2 — Hover no heatmap (Painel) · P
+- Tooltip ao passar o mouse num quadradinho: data + nº de práticas (em vez do `title` nativo).
+
+### M6-T3 — Autocomplete de `[[` nas Notas · M
+- No editor de nota, ao digitar `[[`, sugerir títulos de notas existentes (dropdown filtrável);
+  selecionar insere `[[Título]]`. Evita adivinhar o nome.
+
+### M6-T4 — Coleções mostram a galeria · P
+- Garantir que selecionar uma coleção exibe as imagens (thumbs) dela, não só o chip.
+
+### M6-T5 — Apagar estudo (Biblioteca) · M · DESTRUTIVO
+- Botão apagar no detalhe/galeria → confirma → **apaga o arquivo do vault** (command Rust, guarda
+  dentro do vault) + remove a linha de `study` (cascade tags/coleções/refs/anotações).
+
+### M6-T6 — Planner funcional: anexar arte à execução · G
+- Conceito: **Plano** = programa (ex: Draw-a-Box). **Matérias** (perspectiva, gestual…) = **tags**.
+  Curso some (== Plano; remover seção Curso do StudyDetail; manter colunas no DB sem uso).
+- Em cada execução do dia (tela Hoje / day_log), **anexar uma arte**: importa o arquivo p/ a pasta
+  do plano (Rust `import_study`), indexa em `study`, seta `day_log.study_id` → aparece na Biblioteca.
+
+### M6-T7 — Timeline: filtro por Plano + tag · M · depende M6-T6
+- Trocar/ampliar o filtro: por **Plano** (via day_log.study_id→plan) e por **qualquer tag**.

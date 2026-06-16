@@ -81,6 +81,7 @@ pub fn import_study(
         .map_err(|e| e.to_string())?;
     let dest = Path::new(&dest_folder);
     fs::create_dir_all(dest).map_err(|e| e.to_string())?;
+    // guarda de segurança via caminho canônico…
     let dest_canon = dest.canonicalize().map_err(|e| e.to_string())?;
     if !dest_canon.starts_with(&vault) {
         return Err("recusado: destino fora do vault".into());
@@ -90,10 +91,29 @@ pub fn import_study(
     let filename = src
         .file_name()
         .ok_or_else(|| "origem inválida".to_string())?;
-    let target = unique_path(dest_canon.join(filename));
+    // …mas o caminho de retorno é o "normal" (sem prefixo \\?\), p/ casar com o scan.
+    let target = unique_path(dest.join(filename));
 
     fs::copy(src, &target).map_err(|e| e.to_string())?;
     Ok(target.to_string_lossy().to_string())
+}
+
+/// Apaga um arquivo do vault (guarda: precisa estar DENTRO do vault). Permanente.
+#[tauri::command]
+pub fn delete_file(vault_path: String, file_path: String) -> Result<(), String> {
+    let f = Path::new(&file_path);
+    if !f.exists() {
+        return Ok(());
+    }
+    let vault = Path::new(&vault_path)
+        .canonicalize()
+        .map_err(|e| e.to_string())?;
+    let f = f.canonicalize().map_err(|e| e.to_string())?;
+    if !f.starts_with(&vault) {
+        return Err("recusado: arquivo fora do vault".into());
+    }
+    fs::remove_file(&f).map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 /// Lê um arquivo de texto (ex.: .md do vault) e devolve o conteúdo.

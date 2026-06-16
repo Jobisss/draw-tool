@@ -30,6 +30,50 @@ export default function NoteDetail() {
   const [title, setTitle] = createSignal("");
   const [body, setBody] = createSignal("");
   const [saved, setSaved] = createSignal(false);
+  const [suggest, setSuggest] = createSignal<{ start: number; query: string } | null>(
+    null,
+  );
+  let taRef: HTMLTextAreaElement | undefined;
+
+  // detecta um `[[` aberto antes do cursor → query p/ autocomplete
+  function detect(value: string, caret: number) {
+    const before = value.slice(0, caret);
+    const idx = before.lastIndexOf("[[");
+    if (idx === -1) return null;
+    const q = before.slice(idx + 2);
+    if (/[\]\[\n]/.test(q)) return null;
+    return { start: idx, query: q };
+  }
+
+  function onBodyInput(e: InputEvent & { currentTarget: HTMLTextAreaElement }) {
+    const ta = e.currentTarget;
+    setBody(ta.value);
+    setSuggest(detect(ta.value, ta.selectionStart));
+  }
+
+  const candidates = () => {
+    const s = suggest();
+    if (!s) return [];
+    const q = s.query.toLowerCase();
+    return (allNotes() ?? [])
+      .filter((n) => n.id !== id() && n.title.toLowerCase().includes(q))
+      .slice(0, 8);
+  };
+
+  function pick(noteTitle: string) {
+    const s = suggest();
+    if (!s || !taRef) return;
+    const caret = taRef.selectionStart;
+    const next =
+      body().slice(0, s.start) + `[[${noteTitle}]]` + body().slice(caret);
+    setBody(next);
+    setSuggest(null);
+    const pos = s.start + noteTitle.length + 4;
+    queueMicrotask(() => {
+      taRef!.focus();
+      taRef!.setSelectionRange(pos, pos);
+    });
+  }
 
   createEffect(() => {
     const n = note();
@@ -80,12 +124,36 @@ export default function NoteDetail() {
         />
 
         <div class="mt-4 grid max-w-5xl grid-cols-1 gap-4 lg:grid-cols-2">
-          <textarea
-            value={body()}
-            onInput={(e) => setBody(e.currentTarget.value)}
-            placeholder="Escreva em markdown. [[Outra nota]] cria link."
-            class="min-h-[50vh] resize-none rounded-md border border-neutral-200 bg-white p-4 font-mono text-sm outline-none focus:border-accent-400"
-          />
+          <div class="relative">
+            <textarea
+              ref={taRef}
+              value={body()}
+              onInput={onBodyInput}
+              onKeyDown={(e) => e.key === "Escape" && setSuggest(null)}
+              placeholder="Escreva em markdown. [[Outra nota]] cria link."
+              class="min-h-[50vh] w-full resize-none rounded-md border border-neutral-200 bg-white p-4 font-mono text-sm outline-none focus:border-accent-400"
+            />
+            <Show when={suggest() && candidates().length > 0}>
+              <ul class="absolute left-4 top-4 z-20 w-64 overflow-hidden rounded-md border border-neutral-200 bg-white shadow-lg">
+                <li class="border-b border-neutral-100 px-3 py-1 text-xs text-neutral-400">
+                  notas para [[link]]
+                </li>
+                <For each={candidates()}>
+                  {(n) => (
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => pick(n.title)}
+                        class="block w-full px-3 py-1.5 text-left text-sm hover:bg-accent-50"
+                      >
+                        {n.title}
+                      </button>
+                    </li>
+                  )}
+                </For>
+              </ul>
+            </Show>
+          </div>
           <div
             class="prose prose-sm min-h-[50vh] max-w-none overflow-auto rounded-md border border-neutral-200 bg-white p-4"
             innerHTML={html()}
