@@ -1,5 +1,6 @@
 import { createSignal, onMount, Show } from "solid-js";
-import { open } from "@tauri-apps/plugin-dialog";
+import { open, ask } from "@tauri-apps/plugin-dialog";
+import { resetDatabase } from "../lib/db";
 import { getSetting, setSetting, VAULT_PATH_KEY } from "../lib/settings";
 import {
   scanVault,
@@ -23,6 +24,11 @@ export default function Settings() {
 
   const [notifyOn, setNotifyOn] = createSignal(false);
   const [notifyTime, setNotifyTimeSig] = createSignal("19:00");
+
+  const [resetting, setResetting] = createSignal(false);
+  const [showResetModal, setShowResetModal] = createSignal(false);
+  const [confirmText, setConfirmText] = createSignal("");
+  const RESET_PHRASE = "EU VOU DELETAR TUDO";
 
   onMount(async () => {
     setVault(await getSetting(VAULT_PATH_KEY));
@@ -50,6 +56,32 @@ export default function Settings() {
     if (typeof dir === "string") {
       await setSetting(VAULT_PATH_KEY, dir);
       setVault(dir);
+    }
+  }
+
+  function openResetModal() {
+    setConfirmText("");
+    setShowResetModal(true);
+  }
+  function closeResetModal() {
+    if (resetting()) return;
+    setShowResetModal(false);
+    setConfirmText("");
+  }
+
+  async function confirmReset() {
+    if (confirmText().trim() !== RESET_PHRASE) return;
+    setResetting(true);
+    try {
+      await resetDatabase();
+      // recarrega pra refazer todos os resources do zero
+      window.location.reload();
+    } catch (e) {
+      setResetting(false);
+      await ask(`Falha no reset: ${String(e)}`, {
+        title: "Erro",
+        kind: "error",
+      });
     }
   }
 
@@ -155,6 +187,83 @@ export default function Settings() {
           </button>
         </div>
       </section>
+
+      <section class="mt-8 max-w-2xl border-t border-red-500/30 pt-6">
+        <h2 class="text-sm font-medium text-red-400">Zona de perigo</h2>
+        <p class="mt-1 text-sm text-muted">
+          Apaga todos os dados do app (notas, estudos, planos, índice,
+          configurações). Os arquivos do vault não são tocados. Sem volta.
+        </p>
+        <button
+          type="button"
+          onClick={openResetModal}
+          class="mt-3 rounded-md border border-red-500/40 px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10"
+        >
+          Resetar banco de dados
+        </button>
+      </section>
+
+      {/* ---- modal de confirmação por digitação ---- */}
+      <Show when={showResetModal()}>
+        <div
+          class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={closeResetModal}
+        >
+          <div
+            class="w-full max-w-md rounded-lg border border-red-500/40 bg-surface p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 class="text-lg font-semibold text-red-400">
+              ⚠️ Resetar banco de dados
+            </h3>
+            <p class="mt-2 text-sm text-muted">
+              Isso apaga <strong class="text-ink">TODOS</strong> os dados do app:
+              notas, estudos, planos, índice e configurações. A ação{" "}
+              <strong class="text-ink">não pode ser desfeita</strong>. Os
+              arquivos do seu vault não são tocados.
+            </p>
+            <p class="mt-4 text-sm text-muted">
+              Para confirmar, digite{" "}
+              <code class="rounded bg-bg px-1.5 py-0.5 font-mono text-red-300">
+                {RESET_PHRASE}
+              </code>{" "}
+              abaixo:
+            </p>
+            <input
+              autofocus
+              value={confirmText()}
+              onInput={(e) => setConfirmText(e.currentTarget.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") confirmReset();
+                if (e.key === "Escape") closeResetModal();
+              }}
+              placeholder={RESET_PHRASE}
+              disabled={resetting()}
+              class="mt-2 w-full rounded-md border border-line bg-bg px-3 py-2 font-mono text-sm text-ink outline-none focus:border-red-500 disabled:opacity-50"
+            />
+            <div class="mt-5 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeResetModal}
+                disabled={resetting()}
+                class="rounded-md border border-line px-4 py-2 text-sm text-muted hover:bg-surface2 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={confirmReset}
+                disabled={
+                  resetting() || confirmText().trim() !== RESET_PHRASE
+                }
+                class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {resetting() ? "Apagando…" : "Apagar tudo"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Show>
     </div>
   );
 }

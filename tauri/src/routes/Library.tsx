@@ -1,5 +1,7 @@
 import { createSignal, createResource, For, Show, createEffect, onCleanup } from "solid-js";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { openPath } from "@tauri-apps/plugin-opener";
+import { extractPalette } from "../lib/palette";
 import Gallery from "../components/Gallery";
 import DropZone from "../components/DropZone";
 import { listStudies, distinctFormats, RASTER } from "../lib/studies";
@@ -55,6 +57,14 @@ export default function Library() {
         setLightboxIndex((prev) => (prev! - 1 + list.length) % list.length);
       } else if (e.key === "Escape") {
         setLightboxIndex(null);
+      } else if (e.key === "g" || e.key === "G") {
+        setGrayscale((v) => !v);
+      } else if (e.key === "h" || e.key === "H") {
+        setFlipH((v) => !v);
+      } else if (e.key === "v" || e.key === "V") {
+        setFlipV((v) => !v);
+      } else if (e.key === "r" || e.key === "R") {
+        setShowGrid((v) => !v);
       }
     };
 
@@ -69,11 +79,67 @@ export default function Library() {
   const [isDragging, setIsDragging] = createSignal(false);
   let dragStart = { x: 0, y: 0 };
 
+  // ferramentas de visão (estudo): cinza, espelhar, grid de terços
+  const [grayscale, setGrayscale] = createSignal(false);
+  const [flipH, setFlipH] = createSignal(false);
+  const [flipV, setFlipV] = createSignal(false);
+  const [showGrid, setShowGrid] = createSignal(false);
+
+  // paleta extraída da imagem atual
+  const [palette, setPalette] = createSignal<string[] | null>(null);
+  const [paletteErr, setPaletteErr] = createSignal<string | null>(null);
+  const [copied, setCopied] = createSignal<string | null>(null);
+
+  async function togglePalette(src: string) {
+    if (palette() || paletteErr()) {
+      setPalette(null);
+      setPaletteErr(null);
+      return;
+    }
+    try {
+      setPalette(await extractPalette(src, 6));
+    } catch (e) {
+      setPaletteErr(String(e));
+    }
+  }
+
+  async function copyHex(hex: string) {
+    await navigator.clipboard.writeText(hex);
+    setCopied(hex);
+    setTimeout(() => setCopied(null), 1200);
+  }
+  async function copyAll() {
+    const p = palette();
+    if (!p) return;
+    await navigator.clipboard.writeText(p.join(" "));
+    setCopied("all");
+    setTimeout(() => setCopied(null), 1200);
+  }
+
   function resetZoom() {
     setZoom(1);
     setPan({ x: 0, y: 0 });
     setIsDragging(false);
   }
+
+  // sai do lightbox → zera ferramentas
+  createEffect(() => {
+    if (lightboxIndex() === null) {
+      setGrayscale(false);
+      setFlipH(false);
+      setFlipV(false);
+      setShowGrid(false);
+      setPalette(null);
+      setPaletteErr(null);
+    }
+  });
+
+  // troca de imagem → limpa paleta (recalcula sob demanda)
+  createEffect(() => {
+    lightboxIndex();
+    setPalette(null);
+    setPaletteErr(null);
+  });
 
   createEffect(() => {
     lightboxIndex();
@@ -236,6 +302,76 @@ export default function Library() {
                     </div>
                   </Show>
 
+                  {/* Ferramentas de visão */}
+                  <div class="flex items-center gap-1.5 mr-2">
+                    <button
+                      onClick={() => setGrayscale((v) => !v)}
+                      classList={{
+                        "bg-accent-500 text-white border-accent-500": grayscale(),
+                        "bg-surface2 text-ink border-line hover:bg-line": !grayscale(),
+                      }}
+                      class="rounded px-2 py-0.5 text-xs border font-semibold"
+                      title="Escala de cinza (checar valores)"
+                    >
+                      Cinza
+                    </button>
+                    <button
+                      onClick={() => setFlipH((v) => !v)}
+                      classList={{
+                        "bg-accent-500 text-white border-accent-500": flipH(),
+                        "bg-surface2 text-ink border-line hover:bg-line": !flipH(),
+                      }}
+                      class="rounded px-2 py-0.5 text-xs border font-semibold"
+                      title="Espelhar horizontal (checar proporção)"
+                    >
+                      ⇆
+                    </button>
+                    <button
+                      onClick={() => setFlipV((v) => !v)}
+                      classList={{
+                        "bg-accent-500 text-white border-accent-500": flipV(),
+                        "bg-surface2 text-ink border-line hover:bg-line": !flipV(),
+                      }}
+                      class="rounded px-2 py-0.5 text-xs border font-semibold"
+                      title="Espelhar vertical"
+                    >
+                      ⇅
+                    </button>
+                    <button
+                      onClick={() => setShowGrid((v) => !v)}
+                      classList={{
+                        "bg-accent-500 text-white border-accent-500": showGrid(),
+                        "bg-surface2 text-ink border-line hover:bg-line": !showGrid(),
+                      }}
+                      class="rounded px-2 py-0.5 text-xs border font-semibold"
+                      title="Grid de terços (composição/proporção)"
+                    >
+                      Grid
+                    </button>
+                    <Show when={src()}>
+                      <button
+                        onClick={() => togglePalette(src()!)}
+                        classList={{
+                          "bg-accent-500 text-white border-accent-500":
+                            !!palette() || !!paletteErr(),
+                          "bg-surface2 text-ink border-line hover:bg-line":
+                            !palette() && !paletteErr(),
+                        }}
+                        class="rounded px-2 py-0.5 text-xs border font-semibold"
+                        title="Extrair paleta de cores"
+                      >
+                        Paleta
+                      </button>
+                    </Show>
+                    <button
+                      onClick={() => openPath(s.path)}
+                      class="rounded px-2 py-0.5 text-xs border border-line bg-surface2 text-ink hover:bg-line font-semibold"
+                      title="Abrir no app externo (Clip Studio para .clip)"
+                    >
+                      Abrir ↗
+                    </button>
+                  </div>
+
                   <span class="text-xs text-muted font-mono bg-surface2 px-2.5 py-1 rounded border border-line">
                     {lightboxIndex()! + 1} / {studies()?.length ?? 0}
                   </span>
@@ -285,9 +421,7 @@ export default function Library() {
                     </div>
                   }
                 >
-                  <img
-                    src={src()!}
-                    alt={s.title ?? s.filename}
+                  <div
                     onMouseDown={handleMouseDown}
                     onDblClick={() => {
                       if (zoom() > 1) {
@@ -296,14 +430,34 @@ export default function Library() {
                         setZoom(2.5);
                       }
                     }}
-                    class="max-w-full max-h-[75vh] object-contain select-none shadow-2xl rounded"
+                    class="relative inline-block select-none"
                     style={{
-                      transform: `translate(${pan().x}px, ${pan().y}px) scale(${zoom()})`,
+                      transform: `translate(${pan().x}px, ${pan().y}px) scale(${
+                        zoom() * (flipH() ? -1 : 1)
+                      }, ${zoom() * (flipV() ? -1 : 1)})`,
                       cursor: zoom() > 1 ? (isDragging() ? "grabbing" : "grab") : "zoom-in",
                       "transform-origin": "center",
                       transition: isDragging() ? "none" : "transform 0.15s ease-out",
                     }}
-                  />
+                  >
+                    <img
+                      src={src()!}
+                      alt={s.title ?? s.filename}
+                      class="block max-w-full max-h-[75vh] object-contain shadow-2xl rounded"
+                      style={{ filter: grayscale() ? "grayscale(1)" : "none" }}
+                    />
+                    <Show when={showGrid()}>
+                      <div
+                        class="pointer-events-none absolute inset-0 rounded"
+                        style={{
+                          "background-image":
+                            "linear-gradient(to right, rgba(255,255,255,0.45) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.45) 1px, transparent 1px)",
+                          "background-size": "33.333% 33.333%",
+                          "mix-blend-mode": "difference",
+                        }}
+                      />
+                    </Show>
+                  </div>
                 </Show>
 
                 {/* Right Navigation */}
@@ -318,11 +472,52 @@ export default function Library() {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
+
+                {/* Painel de paleta */}
+                <Show when={palette() || paletteErr()}>
+                  <div class="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-lg border border-line bg-surface/95 p-3 shadow-xl backdrop-blur">
+                    <Show
+                      when={palette()}
+                      fallback={
+                        <p class="text-xs text-red-300">
+                          Não deu pra extrair: {paletteErr()}
+                        </p>
+                      }
+                    >
+                      <div class="flex items-center gap-2">
+                        <For each={palette()!}>
+                          {(hex) => (
+                            <button
+                              onClick={() => copyHex(hex)}
+                              class="group flex flex-col items-center gap-1"
+                              title={`Copiar ${hex}`}
+                            >
+                              <span
+                                class="h-9 w-9 rounded border border-line shadow-sm transition-transform group-hover:scale-110"
+                                style={{ "background-color": hex }}
+                              />
+                              <span class="font-mono text-[10px] text-muted">
+                                {copied() === hex ? "copiado!" : hex}
+                              </span>
+                            </button>
+                          )}
+                        </For>
+                        <button
+                          onClick={copyAll}
+                          class="ml-1 self-start rounded border border-line bg-surface2 px-2 py-1 text-xs text-ink hover:bg-line"
+                          title="Copiar todos os hex"
+                        >
+                          {copied() === "all" ? "✓" : "Copiar tudo"}
+                        </button>
+                      </div>
+                    </Show>
+                  </div>
+                </Show>
               </div>
 
               {/* Footer navigation guide */}
               <div class="p-3 text-center bg-surface border-t border-line text-[11px] text-muted font-mono">
-                Girar <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">Scroll</span> / <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">Dois Cliques</span> para Zoom · Teclas <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">←</span> e <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">→</span> para navegar · <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">Esc</span> para fechar
+                Girar <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">Scroll</span> / <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">Dois Cliques</span> para Zoom · Teclas <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">←</span> e <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">→</span> para navegar · <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">Esc</span> fechar · <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">G</span> cinza · <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">H</span>/<span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">V</span> espelhar · <span class="border border-line px-1 py-0.5 rounded bg-surface2 text-ink font-semibold">R</span> grid
               </div>
             </div>
           );
