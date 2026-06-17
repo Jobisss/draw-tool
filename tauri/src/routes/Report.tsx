@@ -35,7 +35,7 @@ export default function Report() {
             type="date"
             value={start()}
             onChange={(e) => setStart(e.currentTarget.value)}
-            class="mt-1 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
+            class="mt-1 rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500"
           />
         </label>
         <label>
@@ -44,7 +44,7 @@ export default function Report() {
             type="date"
             value={end()}
             onChange={(e) => setEnd(e.currentTarget.value)}
-            class="mt-1 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
+            class="mt-1 rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500"
           />
         </label>
       </div>

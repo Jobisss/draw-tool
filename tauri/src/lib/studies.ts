@@ -1,4 +1,4 @@
-import { select } from "./db";
+import { select, execute } from "./db";
 
 export type Study = {
   id: number;
@@ -15,6 +15,16 @@ export type Study = {
   course_id: number | null;
   lesson: string | null;
 };
+
+function getPathWithoutExtension(filePath: string): string {
+  const lastDot = filePath.lastIndexOf(".");
+  if (lastDot === -1) return filePath;
+  const lastSlash = Math.max(filePath.lastIndexOf("/"), filePath.lastIndexOf("\\"));
+  if (lastDot > lastSlash) {
+    return filePath.slice(0, lastDot);
+  }
+  return filePath;
+}
 
 export async function listStudies(
   opts: { search?: string; format?: string; collectionId?: number } = {},
@@ -46,7 +56,30 @@ export async function listStudies(
   const sql =
     `SELECT * FROM study ${where.length ? "WHERE " + where.join(" AND ") : ""}` +
     ` ORDER BY created_at DESC, filename`;
-  return select<Study>(sql, params);
+  const rows = await select<Study>(sql, params);
+
+  // Filtra duplicados (mesmo nome/caminho sem extensão), priorizando PNG
+  const groups = new Map<string, Study[]>();
+  for (const s of rows) {
+    const key = getPathWithoutExtension(s.path).toLowerCase();
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(s);
+  }
+
+  const filtered: Study[] = [];
+  for (const group of groups.values()) {
+    if (group.length > 1) {
+      const pngStudy = group.find((s) => s.format.toLowerCase() === "png");
+      if (pngStudy) {
+        filtered.push(pngStudy);
+        continue;
+      }
+    }
+    filtered.push(...group);
+  }
+  return filtered;
 }
 
 /** Remove o estudo do índice (cascade tags/coleções/refs/anotações; day_log.study_id→NULL). */

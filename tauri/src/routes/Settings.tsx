@@ -144,7 +144,7 @@ export default function Settings() {
             value={notifyTime()}
             onChange={(e) => saveNotifyTime(e.currentTarget.value)}
             disabled={!notifyOn()}
-            class="rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500 disabled:opacity-50"
+            class="rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500 disabled:opacity-50"
           />
           <button
             type="button"

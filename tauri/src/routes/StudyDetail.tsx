@@ -96,7 +96,7 @@ export default function StudyDetail() {
                 />
               }
             >
-              <div class="grid min-h-[300px] place-items-center rounded-md border border-line bg-surface2 p-4">
+              <div class="grid min-h-[300px] place-items-center rounded-md border border-line bg-surface2 p-4 overflow-hidden">
                 <Show
                   when={src()}
                   fallback={
@@ -231,7 +231,7 @@ function StudyEditors(props: { studyId: number }) {
           type="date"
           value={date()}
           onChange={(e) => saveDate(e.currentTarget.value)}
-          class="mt-2 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
+          class="mt-2 rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500"
         />
         <p class="mt-1 text-xs text-faint">
           Usada na Timeline e no Painel. Padrão = data do arquivo.
@@ -261,12 +261,12 @@ function StudyEditors(props: { studyId: number }) {
             value={tagName()}
             onInput={(e) => setTagName(e.currentTarget.value)}
             placeholder="nome da tag"
-            class="flex-1 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
+            class="flex-1 rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500"
           />
           <select
             value={tagCat()}
             onChange={(e) => setTagCat(e.currentTarget.value)}
-            class="rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
+            class="rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500"
           >
             <For each={TAG_CATEGORIES}>{(c) => <option value={c}>{c}</option>}</For>
           </select>
@@ -300,7 +300,7 @@ function StudyEditors(props: { studyId: number }) {
           <select
             value={colSel()}
             onChange={(e) => setColSel(e.currentTarget.value)}
-            class="flex-1 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
+            class="flex-1 rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500"
           >
             <option value="">adicionar a coleção…</option>
             <For each={(allCols() ?? []).filter((c) => !inCol(c.id))}>
@@ -319,7 +319,7 @@ function StudyEditors(props: { studyId: number }) {
             value={newCol()}
             onInput={(e) => setNewCol(e.currentTarget.value)}
             placeholder="nova coleção"
-            class="flex-1 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
+            class="flex-1 rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500"
           />
           <button
             onClick={addNewCol}

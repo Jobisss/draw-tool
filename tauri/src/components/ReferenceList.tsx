@@ -58,14 +58,14 @@ export default function ReferenceList(props: { studyId: number }) {
           value={url()}
           onInput={(e) => setUrl(e.currentTarget.value)}
           placeholder="https://…"
-          class="w-full rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
+          class="w-full rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500"
         />
         <div class="flex gap-2">
           <input
             value={caption()}
             onInput={(e) => setCaption(e.currentTarget.value)}
             placeholder="legenda (opcional)"
-            class="flex-1 rounded-md border border-line px-2 py-1 text-sm outline-none focus:border-accent-500"
+            class="flex-1 rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500"
           />
           <button
             onClick={add}

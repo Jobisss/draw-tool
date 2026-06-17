@@ -58,7 +58,7 @@ export default function Collections() {
           value={name()}
           onInput={(e) => setName(e.currentTarget.value)}
           placeholder="Nova coleção"
-          class="flex-1 rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
+          class="flex-1 rounded-md border border-line bg-surface text-ink px-3 py-2 text-sm outline-none focus:border-accent-500"
         />
         <button
           type="submit"

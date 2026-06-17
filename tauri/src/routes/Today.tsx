@@ -268,13 +268,13 @@ function PracticeItem(props: {
                   setMin(e.currentTarget.value === "" ? "" : +e.currentTarget.value)
                 }
                 placeholder="min"
-                class="w-20 rounded-md border border-line px-2 py-1 text-xs outline-none focus:border-accent-500"
+                class="w-20 rounded-md border border-line bg-surface text-ink px-2 py-1 text-xs outline-none focus:border-accent-500"
               />
               <input
                 value={note()}
                 onInput={(e) => setNote(e.currentTarget.value)}
                 placeholder="nota rápida (opcional)"
-                class="flex-1 rounded-md border border-line px-2 py-1 text-xs outline-none focus:border-accent-500"
+                class="flex-1 rounded-md border border-line bg-surface text-ink px-2 py-1 text-xs outline-none focus:border-accent-500"
               />
             </div>
           </Show>

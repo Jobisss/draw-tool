@@ -13,6 +13,16 @@ function monthLabel(ym: string): string {
   return `${MESES[(m || 1) - 1]} ${y}`;
 }
 
+function getPathWithoutExtension(filePath: string): string {
+  const lastDot = filePath.lastIndexOf(".");
+  if (lastDot === -1) return filePath;
+  const lastSlash = Math.max(filePath.lastIndexOf("/"), filePath.lastIndexOf("\\"));
+  if (lastDot > lastSlash) {
+    return filePath.slice(0, lastDot);
+  }
+  return filePath;
+}
+
 /** Estudos p/ a timeline, filtrando por tag (qualquer) e/ou plano (via day_log). */
 export async function timelineStudies(
   opts: { tagId?: number; planId?: number } = {},
@@ -31,10 +41,34 @@ export async function timelineStudies(
       `EXISTS(SELECT 1 FROM day_log dl WHERE dl.study_id = s.id AND dl.plan_id = $${params.length})`,
     );
   }
-  return select<Study>(
+
+  const rows = await select<Study>(
     `SELECT s.* FROM study s WHERE ${where.join(" AND ")} ORDER BY s.created_at DESC`,
     params,
   );
+
+  // Filtra duplicados (mesmo nome/caminho sem extensão), priorizando PNG
+  const groups = new Map<string, Study[]>();
+  for (const s of rows) {
+    const key = getPathWithoutExtension(s.path).toLowerCase();
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(s);
+  }
+
+  const filtered: Study[] = [];
+  for (const group of groups.values()) {
+    if (group.length > 1) {
+      const pngStudy = group.find((s) => s.format.toLowerCase() === "png");
+      if (pngStudy) {
+        filtered.push(pngStudy);
+        continue;
+      }
+    }
+    filtered.push(...group);
+  }
+  return filtered;
 }
 
 export function groupByMonth(studies: Study[]): MonthGroup[] {

@@ -473,6 +473,20 @@ Backlog v1 (se voltar): file-watch, multi-vault, FTS5, render `.clip`, toggle cl
 - Decisões: tema dark-only por ora (tokens já prontos p/ futuro toggle); serifa só nos títulos;
   sem ornamentos toile (peso). Iterar conforme feedback (intensidade do azul, fundo, serifa no corpo).
 
+### 2026-06-16 — v2 Fixes & Biblioteca Improvements
+- Feito: importação de `execute` em `src/lib/studies.ts` para corrigir a falha silenciosa na deleção de estudos (ReferenceError).
+- Feito: estilização de vários inputs e selects em `Report.tsx`, `Today.tsx`, `Settings.tsx`, `StudyDetail.tsx`, `ImageAnnotator.tsx`, `ReferenceList.tsx` e `Collections.tsx` adicionando `bg-surface text-ink` para resolver campos brancos no tema escuro.
+- Feito: diminuição do tamanho dos cards da Galeria (`Gallery.tsx`) aumentando as colunas do grid.
+- Feito: filtro na listagem de estudos para exibir somente o formato `.png` caso existam 2 arquivos de mesmo nome base (stem/caminho sem extensão) no mesmo local.
+- Feito: implementação de Lightbox no grid de visualização da biblioteca (`Library.tsx`) com navegação por teclado (`←` e `→` / `Esc`), controles de Zoom (Scroll do mouse, duplo clique, botões +/- e indicador de porcentagem) e arrastar para mover (panning) quando ampliado.
+- Feito: implementação de controles de Zoom (Scroll, duplo clique e arrastar para mover) na página de detalhes do estudo (`/biblioteca/:id` em `ImageAnnotator.tsx`), garantindo que os pins de anotação existentes e novos escalem e movam sincronizadamente com a imagem, e que cliques normais ainda adicionem anotações mesmo quando ampliado.
+- Feito: filtro na query/listagem da Timeline (`timeline.ts`) para exibir apenas o formato `.png` caso existam múltiplos formatos do mesmo nome no mesmo local.
+- Feito: implementação de collapsible headers na Timeline (`Timeline.tsx`) por mês, permitindo recolher/expandir seções individuais de forma reativa e adicionando botões globais "Recolher todos" e "Expandir todos".
+- Feito: atualização do logotipo do aplicativo na barra lateral (`Sidebar.tsx`) e do favicon no arquivo de entrada (`index.html`) para utilizar a nova imagem `/lapis-logo.png` fornecida no diretório `public`.
+- Feito: regeneração de todos os ícones nativos do sistema (incluindo o arquivo `icon.ico` da barra de tarefas do Windows e título da janela) a partir do `lapis-logo.png` usando o comando `npx tauri icon`.
+- Feito: atualização do título padrão do aplicativo para `draw-study` em `index.html`.
+- Verificado: `npm run build` passa (typecheck verde).
+
 ## Template de entrada (copiar p/ cada fase)
 ```
 ### AAAA-MM-DD — Fase X: <nome>
