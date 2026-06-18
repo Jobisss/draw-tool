@@ -1,5 +1,7 @@
 import { select } from "./db";
 import type { Study } from "./studies";
+import { listPlans } from "./plans";
+import { studyPlan } from "./planMatch";
 
 export type MonthGroup = { month: string; label: string; studies: Study[] };
 
@@ -23,29 +25,18 @@ function getPathWithoutExtension(filePath: string): string {
   return filePath;
 }
 
-/** Estudos p/ a timeline, filtrando por tag (qualquer) e/ou plano (via day_log). */
+/** Estudos p/ a timeline, filtrando por plano (pela pasta do estudo no vault). */
 export async function timelineStudies(
-  opts: { tagId?: number; planId?: number } = {},
+  opts: { planId?: number } = {},
 ): Promise<Study[]> {
-  const where: string[] = ["s.created_at IS NOT NULL"];
-  const params: unknown[] = [];
-  if (opts.tagId) {
-    params.push(opts.tagId);
-    where.push(
-      `EXISTS(SELECT 1 FROM study_tag st WHERE st.study_id = s.id AND st.tag_id = $${params.length})`,
-    );
-  }
-  if (opts.planId) {
-    params.push(opts.planId);
-    where.push(
-      `EXISTS(SELECT 1 FROM day_log dl WHERE dl.study_id = s.id AND dl.plan_id = $${params.length})`,
-    );
-  }
-
-  const rows = await select<Study>(
-    `SELECT s.* FROM study s WHERE ${where.join(" AND ")} ORDER BY s.created_at DESC`,
-    params,
+  let rows = await select<Study>(
+    `SELECT s.* FROM study s WHERE s.created_at IS NOT NULL ORDER BY s.created_at DESC`,
   );
+
+  if (opts.planId) {
+    const plans = await listPlans();
+    rows = rows.filter((s) => studyPlan(s.path, plans)?.id === opts.planId);
+  }
 
   // Filtra duplicados (mesmo nome/caminho sem extensão), priorizando PNG
   const groups = new Map<string, Study[]>();

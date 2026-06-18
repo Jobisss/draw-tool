@@ -1,5 +1,5 @@
 import { createResource, createSignal, For, Show } from "solid-js";
-import { dashboardStats, logHeatmap, studiesByTechnique } from "../lib/stats";
+import { dashboardStats, logHeatmap, studiesByPlan } from "../lib/stats";
 import { mondayOf } from "../lib/consistency";
 import { todayDate } from "../lib/logs";
 
@@ -16,7 +16,7 @@ function heatClass(n: number): string {
 export default function Dashboard() {
   const [stats] = createResource(dashboardStats);
   const [heat] = createResource(logHeatmap);
-  const [techs] = createResource(studiesByTechnique);
+  const [byPlan] = createResource(studiesByPlan);
   const [hover, setHover] = createSignal<{ date: string; count: number } | null>(
     null,
   );
@@ -45,8 +45,8 @@ export default function Dashboard() {
     return cols;
   };
 
-  const maxTech = () =>
-    Math.max(1, ...(techs() ?? []).map((t) => t.count));
+  const maxPlan = () =>
+    Math.max(1, ...(byPlan() ?? []).map((t) => t.count));
 
   return (
     <div class="p-8">
@@ -103,26 +103,24 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Por técnica */}
+      {/* Por plano */}
       <section class="mt-8 max-w-xl">
-        <h2 class="text-sm font-medium text-ink">Estudos por técnica</h2>
+        <h2 class="text-sm font-medium text-ink">Estudos por plano</h2>
         <Show
-          when={(techs() ?? []).length > 0}
+          when={(byPlan() ?? []).length > 0}
           fallback={
-            <p class="mt-2 text-sm text-faint">
-              Sem tags de técnica ainda.
-            </p>
+            <p class="mt-2 text-sm text-faint">Sem estudos ainda.</p>
           }
         >
           <div class="mt-3 space-y-2">
-            <For each={techs()}>
+            <For each={byPlan()}>
               {(t) => (
                 <div class="flex items-center gap-3 text-sm">
                   <span class="w-32 truncate text-muted">{t.name}</span>
                   <div class="h-3 flex-1 overflow-hidden rounded-full bg-surface2">
                     <div
                       class="h-full rounded-full bg-accent-500"
-                      style={{ width: `${(t.count / maxTech()) * 100}%` }}
+                      style={{ width: `${(t.count / maxPlan()) * 100}%` }}
                     />
                   </div>
                   <span class="w-8 text-right text-muted">{t.count}</span>

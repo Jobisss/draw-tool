@@ -2,6 +2,7 @@ import { For, Show } from "solid-js";
 import { A } from "@solidjs/router";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import type { Study } from "../lib/studies";
+import PdfThumb from "./PdfThumb";
 
 export default function Gallery(props: {
   studies: Study[];
@@ -21,19 +22,24 @@ export default function Gallery(props: {
               <A href={`/biblioteca/${s.id}`} class="block">
                 <div class="grid aspect-square place-items-center bg-surface2">
                   <Show
-                    when={s.thumb_path}
-                    fallback={
-                      <span class="text-xl uppercase text-faint font-semibold">
-                        {s.format}
-                      </span>
-                    }
+                    when={!(s.format === "pdf" && !s.thumb_path)}
+                    fallback={<PdfThumb path={s.path} />}
                   >
-                    <img
-                      src={convertFileSrc(s.thumb_path!)}
-                      alt={s.title ?? s.filename}
-                      class="h-full w-full object-cover"
-                      loading="lazy"
-                    />
+                    <Show
+                      when={s.thumb_path}
+                      fallback={
+                        <span class="text-xl uppercase text-faint font-semibold">
+                          {s.format}
+                        </span>
+                      }
+                    >
+                      <img
+                        src={convertFileSrc(s.thumb_path!)}
+                        alt={s.title ?? s.filename}
+                        class="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </Show>
                   </Show>
                 </div>
                 <div class="p-1.5">

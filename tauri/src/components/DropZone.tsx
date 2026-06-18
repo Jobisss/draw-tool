@@ -15,6 +15,7 @@ export default function DropZone(props: { onImported: () => void }) {
   const [plans, setPlans] = createSignal<Plan[]>([]);
   const [planId, setPlanId] = createSignal<number | null>(null);
   const [subfolder, setSubfolder] = createSignal("");
+  const [destFolder, setDestFolder] = createSignal<string | null>(null);
   const [busy, setBusy] = createSignal(false);
   const [msg, setMsg] = createSignal<string | null>(null);
 
@@ -43,19 +44,29 @@ export default function DropZone(props: { onImported: () => void }) {
     else if (typeof sel === "string") setSrcs([sel]);
   }
 
+  async function pickFolder() {
+    const vault = await getSetting(VAULT_PATH_KEY);
+    const sel = await open({ directory: true, defaultPath: vault ?? undefined });
+    if (typeof sel === "string") setDestFolder(sel);
+  }
+
   async function doImport() {
-    const plan = plans().find((p) => p.id === planId());
-    if (!plan?.folder_path) {
-      setMsg("Escolha um plano com pasta no vault.");
-      return;
-    }
     const vault = await getSetting(VAULT_PATH_KEY);
     if (!vault) {
       setMsg("Defina o vault em Configurações.");
       return;
     }
-    const sub = subfolder().trim();
-    const dest = sub ? `${plan.folder_path}\\${sub}` : plan.folder_path;
+    const plan = plans().find((p) => p.id === planId());
+    let dest: string;
+    if (plan?.folder_path) {
+      const sub = subfolder().trim();
+      dest = sub ? `${plan.folder_path}\\${sub}` : plan.folder_path;
+    } else if (destFolder()) {
+      dest = destFolder()!;
+    } else {
+      setMsg("Escolha um plano ou uma pasta destino no vault.");
+      return;
+    }
 
     setBusy(true);
     setMsg(null);
@@ -86,7 +97,7 @@ export default function DropZone(props: { onImported: () => void }) {
         fallback={
           <div class="flex items-center justify-between gap-3">
             <span class="text-sm text-muted">
-              Arraste arquivos aqui para importar para um plano.
+              Arraste arquivos aqui para importar (com ou sem plano).
             </span>
             <button
               type="button"
@@ -106,25 +117,54 @@ export default function DropZone(props: { onImported: () => void }) {
             <span class="block text-xs font-medium text-muted">Plano</span>
             <select
               value={planId() ?? ""}
-              onChange={(e) => setPlanId(Number(e.currentTarget.value))}
-              class="mt-1 rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
+              onChange={(e) => {
+                const v = e.currentTarget.value;
+                setPlanId(v ? Number(v) : null);
+              }}
+              class="mt-1 rounded-md border border-line bg-surface text-ink px-3 py-2 text-sm outline-none focus:border-accent-500"
             >
+              <option value="">(sem plano)</option>
               <For each={plans()}>
                 {(p) => <option value={p.id}>{p.name}</option>}
               </For>
             </select>
           </label>
-          <label>
-            <span class="block text-xs font-medium text-muted">
-              Subpasta (opcional)
-            </span>
-            <input
-              value={subfolder()}
-              onInput={(e) => setSubfolder(e.currentTarget.value)}
-              placeholder="gesture"
-              class="mt-1 rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
-            />
-          </label>
+          <Show
+            when={planId() !== null}
+            fallback={
+              <label>
+                <span class="block text-xs font-medium text-muted">
+                  Pasta destino
+                </span>
+                <div class="mt-1 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={pickFolder}
+                    class="rounded-md border border-line px-3 py-2 text-sm text-ink hover:bg-surface2"
+                  >
+                    Escolher pasta…
+                  </button>
+                  <Show when={destFolder()}>
+                    <span class="max-w-[16rem] truncate font-mono text-xs text-muted">
+                      {destFolder()}
+                    </span>
+                  </Show>
+                </div>
+              </label>
+            }
+          >
+            <label>
+              <span class="block text-xs font-medium text-muted">
+                Subpasta (opcional)
+              </span>
+              <input
+                value={subfolder()}
+                onInput={(e) => setSubfolder(e.currentTarget.value)}
+                placeholder="gesture"
+                class="mt-1 rounded-md border border-line bg-surface text-ink px-3 py-2 text-sm outline-none focus:border-accent-500"
+              />
+            </label>
+          </Show>
           <button
             type="button"
             disabled={busy()}

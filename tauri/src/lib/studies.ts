@@ -35,11 +35,7 @@ export async function listStudies(
   if (opts.search?.trim()) {
     params.push(`%${opts.search.trim()}%`);
     const i = params.length;
-    where.push(
-      `(filename LIKE $${i} OR title LIKE $${i} OR EXISTS(
-         SELECT 1 FROM study_tag st JOIN tag t ON t.id = st.tag_id
-          WHERE st.study_id = study.id AND t.name LIKE $${i}))`,
-    );
+    where.push(`(filename LIKE $${i} OR title LIKE $${i})`);
   }
   if (opts.format) {
     params.push(opts.format);

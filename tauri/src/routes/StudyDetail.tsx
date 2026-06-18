@@ -14,12 +14,6 @@ import { getStudy, setStudyDate, deleteStudy, RASTER } from "../lib/studies";
 import { readTextFile, deleteFile } from "../lib/api";
 import { getSetting, VAULT_PATH_KEY } from "../lib/settings";
 import {
-  tagsForStudy,
-  addTagToStudy,
-  removeTagFromStudy,
-  TAG_CATEGORIES,
-} from "../lib/tags";
-import {
   listCollections,
   collectionsForStudy,
   addToCollection,
@@ -28,6 +22,7 @@ import {
 } from "../lib/collections";
 import ImageAnnotator from "../components/ImageAnnotator";
 import ReferenceList from "../components/ReferenceList";
+import PdfViewer from "../components/PdfViewer";
 
 const md = new MarkdownIt({ html: false, linkify: true, typographer: true });
 
@@ -66,6 +61,7 @@ export default function StudyDetail() {
   }
 
   const isMd = () => study()?.format === "md";
+  const isPdf = () => study()?.format === "pdf";
   const [mdText] = createResource(
     () => (isMd() ? study()!.path : false),
     readTextFile,
@@ -96,22 +92,31 @@ export default function StudyDetail() {
                 />
               }
             >
-              <div class="grid min-h-[300px] place-items-center rounded-md border border-line bg-surface2 p-4 overflow-hidden">
-                <Show
-                  when={src()}
-                  fallback={
-                    <span class="text-5xl uppercase text-faint">
-                      {s().format}
-                    </span>
-                  }
-                >
-                  <ImageAnnotator
-                    studyId={s().id}
-                    src={src()!}
-                    alt={s().title ?? s().filename}
-                  />
-                </Show>
-              </div>
+              <Show
+                when={!isPdf()}
+                fallback={
+                  <div class="rounded-md border border-line bg-surface p-4">
+                    <PdfViewer path={s().path} />
+                  </div>
+                }
+              >
+                <div class="grid min-h-[300px] place-items-center rounded-md border border-line bg-surface2 p-4 overflow-hidden">
+                  <Show
+                    when={src()}
+                    fallback={
+                      <span class="text-5xl uppercase text-faint">
+                        {s().format}
+                      </span>
+                    }
+                  >
+                    <ImageAnnotator
+                      studyId={s().id}
+                      src={src()!}
+                      alt={s().title ?? s().filename}
+                    />
+                  </Show>
+                </div>
+              </Show>
             </Show>
 
             <div>
@@ -155,10 +160,6 @@ export default function StudyDetail() {
 }
 
 function StudyEditors(props: { studyId: number }) {
-  const [tags, { refetch: refetchTags }] = createResource(
-    () => props.studyId,
-    tagsForStudy,
-  );
   const [allCols, { refetch: refetchAllCols }] = createResource(listCollections);
   const [studyCols, { refetch: refetchStudyCols }] = createResource(
     () => props.studyId,
@@ -169,8 +170,6 @@ function StudyEditors(props: { studyId: number }) {
     getStudy,
   );
 
-  const [tagName, setTagName] = createSignal("");
-  const [tagCat, setTagCat] = createSignal(TAG_CATEGORIES[0]);
   const [colSel, setColSel] = createSignal<string>("");
   const [newCol, setNewCol] = createSignal("");
   const [date, setDate] = createSignal("");
@@ -185,17 +184,6 @@ function StudyEditors(props: { studyId: number }) {
     setDate(value);
     await setStudyDate(props.studyId, value || null);
     refetchStudy();
-  }
-
-  async function addTag() {
-    if (!tagName().trim()) return;
-    await addTagToStudy(props.studyId, tagName().trim(), tagCat());
-    setTagName("");
-    refetchTags();
-  }
-  async function rmTag(id: number) {
-    await removeTagFromStudy(props.studyId, id);
-    refetchTags();
   }
 
   async function addCol() {
@@ -236,47 +224,6 @@ function StudyEditors(props: { studyId: number }) {
         <p class="mt-1 text-xs text-faint">
           Usada na Timeline e no Painel. Padrão = data do arquivo.
         </p>
-      </section>
-
-      {/* Tags */}
-      <section>
-        <h3 class="text-xs font-semibold uppercase tracking-wide text-faint">
-          Tags
-        </h3>
-        <div class="mt-2 flex flex-wrap gap-1.5">
-          <For each={tags() ?? []}>
-            {(t) => (
-              <span class="inline-flex items-center gap-1 rounded-full bg-accent-500/10 px-2 py-0.5 text-xs text-accent-300">
-                {t.category ? `${t.category}: ` : ""}
-                {t.name}
-                <button onClick={() => rmTag(t.id)} class="hover:text-red-500">
-                  ✕
-                </button>
-              </span>
-            )}
-          </For>
-        </div>
-        <div class="mt-2 flex gap-2">
-          <input
-            value={tagName()}
-            onInput={(e) => setTagName(e.currentTarget.value)}
-            placeholder="nome da tag"
-            class="flex-1 rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500"
-          />
-          <select
-            value={tagCat()}
-            onChange={(e) => setTagCat(e.currentTarget.value)}
-            class="rounded-md border border-line bg-surface text-ink px-2 py-1 text-sm outline-none focus:border-accent-500"
-          >
-            <For each={TAG_CATEGORIES}>{(c) => <option value={c}>{c}</option>}</For>
-          </select>
-          <button
-            onClick={addTag}
-            class="rounded-md border border-line px-3 py-1 text-sm hover:bg-surface2"
-          >
-            +
-          </button>
-        </div>
       </section>
 
       {/* Coleções */}

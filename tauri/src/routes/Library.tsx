@@ -4,6 +4,7 @@ import { openPath } from "@tauri-apps/plugin-opener";
 import { extractPalette } from "../lib/palette";
 import Gallery from "../components/Gallery";
 import DropZone from "../components/DropZone";
+import PdfViewer from "../components/PdfViewer";
 import { listStudies, distinctFormats, RASTER } from "../lib/studies";
 import { scanVault, generateMissingThumbnails } from "../lib/indexer";
 import { listCollections } from "../lib/collections";
@@ -51,6 +52,9 @@ export default function Library() {
     const handleKeyDown = (e: KeyboardEvent) => {
       const list = studies() ?? [];
       if (list.length === 0) return;
+      // PDF: setas paginam o PDF (PdfViewer), não trocam de estudo
+      const curPdf = currentStudy()?.format.toLowerCase() === "pdf";
+      if ((e.key === "ArrowRight" || e.key === "ArrowLeft") && curPdf) return;
       if (e.key === "ArrowRight") {
         setLightboxIndex((prev) => (prev! + 1) % list.length);
       } else if (e.key === "ArrowLeft") {
@@ -211,7 +215,7 @@ export default function Library() {
         <input
           value={search()}
           onInput={(e) => setSearch(e.currentTarget.value)}
-          placeholder="Buscar por nome ou tag…"
+          placeholder="Buscar por nome…"
           class="w-64 rounded-md border border-line bg-surface text-ink px-3 py-2 text-sm outline-none focus:border-accent-500"
         />
         <select
@@ -252,6 +256,7 @@ export default function Library() {
       <Show when={lightboxIndex() !== null && currentStudy()}>
         {() => {
           const s = currentStudy()!;
+          const isPdf = () => s.format.toLowerCase() === "pdf";
           const isRaster = () => RASTER.has(s.format.toLowerCase());
           const src = () => {
             if (isRaster()) return convertFileSrc(s.path);
@@ -407,7 +412,16 @@ export default function Library() {
                   </svg>
                 </button>
 
-                {/* Main View */}
+                {/* Main View — PDF (leitor nativo do WebView2) */}
+                <Show when={isPdf()}>
+                  <PdfViewer
+                    path={s.path}
+                    class="h-full w-full max-w-4xl rounded-md border border-line bg-white"
+                  />
+                </Show>
+
+                {/* Main View — imagem (não-PDF) */}
+                <Show when={!isPdf()}>
                 <Show
                   when={src()}
                   fallback={
@@ -458,6 +472,7 @@ export default function Library() {
                       />
                     </Show>
                   </div>
+                </Show>
                 </Show>
 
                 {/* Right Navigation */}

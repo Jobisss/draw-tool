@@ -1,24 +1,22 @@
 import { createSignal, createResource, For, Show } from "solid-js";
 import Gallery from "../components/Gallery";
+import FlipBook from "../components/FlipBook";
 import { timelineStudies, groupByMonth } from "../lib/timeline";
 import { listPlans } from "../lib/plans";
-import { listTags } from "../lib/tags";
 
 export default function Timeline() {
   const [planId, setPlanId] = createSignal("");
-  const [tagId, setTagId] = createSignal("");
+  const [view, setView] = createSignal<"gallery" | "book">("gallery");
   const [collapsedMonths, setCollapsedMonths] = createSignal<Set<string>>(new Set());
 
   const [studies] = createResource(
-    () => ({ plan: planId(), tag: tagId() }),
+    () => ({ plan: planId() }),
     (s) =>
       timelineStudies({
         planId: s.plan ? Number(s.plan) : undefined,
-        tagId: s.tag ? Number(s.tag) : undefined,
       }),
   );
   const [plans] = createResource(listPlans);
-  const [tags] = createResource(listTags);
 
   const groups = () => groupByMonth(studies() ?? []);
 
@@ -59,29 +57,38 @@ export default function Timeline() {
             {(p) => <option value={p.id}>{p.name}</option>}
           </For>
         </select>
-        <select
-          value={tagId()}
-          onChange={(e) => setTagId(e.currentTarget.value)}
-          class="rounded-md border border-line bg-surface px-3 py-2 text-sm outline-none focus:border-accent-500"
-        >
-          <option value="">Todas as tags</option>
-          <For each={tags() ?? []}>
-            {(t) => (
-              <option value={t.id}>
-                {t.category ? `${t.category}: ` : ""}
-                {t.name}
-              </option>
-            )}
-          </For>
-        </select>
         <Show when={studies()}>
           <span class="text-sm text-muted font-serif">
             {studies()!.length} estudos
           </span>
         </Show>
 
-        <Show when={groups().length > 0}>
-          <div class="ml-auto flex gap-2">
+        <div class="ml-auto flex items-center gap-2">
+          {/* Alternar Galeria / Livro */}
+          <div class="flex rounded-md border border-line overflow-hidden text-xs">
+            <button
+              onClick={() => setView("gallery")}
+              class="px-3 py-1.5 transition-colors"
+              classList={{
+                "bg-accent-500 text-white": view() === "gallery",
+                "bg-surface text-ink hover:bg-surface2": view() !== "gallery",
+              }}
+            >
+              Galeria
+            </button>
+            <button
+              onClick={() => setView("book")}
+              class="px-3 py-1.5 transition-colors"
+              classList={{
+                "bg-accent-500 text-white": view() === "book",
+                "bg-surface text-ink hover:bg-surface2": view() !== "book",
+              }}
+            >
+              📖 Livro
+            </button>
+          </div>
+
+          <Show when={view() === "gallery" && groups().length > 0}>
             <button
               onClick={collapseAll}
               class="rounded bg-surface2 px-2.5 py-1 text-xs border border-line hover:bg-line text-ink transition-colors"
@@ -94,16 +101,38 @@ export default function Timeline() {
             >
               Expandir todos
             </button>
-          </div>
-        </Show>
+          </Show>
+        </div>
       </div>
 
+      <Show when={view() === "book"}>
+        <Show
+          when={(studies()?.length ?? 0) > 0}
+          fallback={
+            <p class="mt-8 text-sm text-faint">
+              Nenhum estudo com data no filtro atual.
+            </p>
+          }
+        >
+          {/* keyed: remonta o livro quando o filtro muda */}
+          <Show when={[...(studies() ?? [])].reverse()} keyed>
+            {(book) => (
+              <div class="mt-8">
+                <FlipBook studies={book} />
+              </div>
+            )}
+          </Show>
+        </Show>
+      </Show>
+
       <Show
-        when={groups().length > 0}
+        when={view() === "gallery" && groups().length > 0}
         fallback={
-          <p class="mt-8 text-sm text-faint">
-            Nenhum estudo com data no filtro atual.
-          </p>
+          <Show when={view() === "gallery"}>
+            <p class="mt-8 text-sm text-faint">
+              Nenhum estudo com data no filtro atual.
+            </p>
+          </Show>
         }
       >
         <div class="mt-8 space-y-10">

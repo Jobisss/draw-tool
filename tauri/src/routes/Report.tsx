@@ -61,18 +61,18 @@ export default function Report() {
         </div>
 
         <section class="mt-6 max-w-2xl">
-          <h2 class="text-sm font-medium text-ink">Por técnica</h2>
+          <h2 class="text-sm font-medium text-ink">Por plano</h2>
           <Show
-            when={data()!.byTechnique.length > 0}
+            when={data()!.byPlan.length > 0}
             fallback={
               <p class="mt-2 text-sm text-faint">
-                Sem estudos com técnica no período.
+                Sem estudos no período.
               </p>
             }
           >
             <table class="mt-2 w-full text-sm">
               <tbody>
-                <For each={data()!.byTechnique}>
+                <For each={data()!.byPlan}>
                   {(t) => (
                     <tr class="border-b border-line">
                       <td class="py-1 text-ink">{t.name}</td>

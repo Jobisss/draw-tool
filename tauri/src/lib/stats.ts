@@ -28,13 +28,5 @@ export async function logHeatmap(): Promise<Map<string, number>> {
   return new Map(rows.map((r) => [r.date, r.count]));
 }
 
-export type TechCount = { name: string; count: number };
-
-export async function studiesByTechnique(): Promise<TechCount[]> {
-  return select<TechCount>(
-    `SELECT t.name AS name, COUNT(*) AS count
-       FROM study_tag st JOIN tag t ON t.id = st.tag_id
-      WHERE t.category = 'tecnica'
-      GROUP BY t.id ORDER BY count DESC`,
-  );
-}
+export { studiesByPlan } from "./planMatch";
+export type { PlanCount } from "./planMatch";
