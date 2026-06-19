@@ -40,6 +40,11 @@ export function readTextFile(path: string): Promise<string> {
   return invoke<string>("read_text_file", { path });
 }
 
+/** Escreve um arquivo de texto num caminho livre (ex.: export de config). */
+export function writeTextFile(path: string, contents: string): Promise<void> {
+  return invoke("write_text_file", { path, contents });
+}
+
 /** Gera/reusa thumbnail de um estudo. Retorna o caminho do thumb ou null (placeholder). */
 export function generateThumbnail(
   studyPath: string,

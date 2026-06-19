@@ -122,6 +122,13 @@ pub fn read_text_file(path: String) -> Result<String, String> {
     fs::read_to_string(&path).map_err(|e| e.to_string())
 }
 
+/// Escreve um arquivo de texto (ex.: export de config p/ .json). Caminho livre
+/// (escolhido pelo usuário via dialog de salvar) — não é o vault.
+#[tauri::command]
+pub fn write_text_file(path: String, contents: String) -> Result<(), String> {
+    fs::write(&path, contents).map_err(|e| e.to_string())
+}
+
 /// Apaga a pasta de um plano (recursivo). Guarda de segurança: só apaga se a pasta
 /// estiver DENTRO do vault e não for o próprio vault. Não erra se já não existe.
 #[tauri::command]

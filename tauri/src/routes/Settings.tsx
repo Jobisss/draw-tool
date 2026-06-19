@@ -1,5 +1,11 @@
 import { createSignal, onMount, Show } from "solid-js";
-import { open, ask } from "@tauri-apps/plugin-dialog";
+import { open, save, ask } from "@tauri-apps/plugin-dialog";
+import { readTextFile, writeTextFile } from "../lib/api";
+import {
+  exportConfigJson,
+  importConfigJson,
+  type ImportResult,
+} from "../lib/config";
 import { resetDatabase } from "../lib/db";
 import { getSetting, setSetting, VAULT_PATH_KEY } from "../lib/settings";
 import {
@@ -24,6 +30,10 @@ export default function Settings() {
 
   const [notifyOn, setNotifyOn] = createSignal(false);
   const [notifyTime, setNotifyTimeSig] = createSignal("19:00");
+
+  const [cfgBusy, setCfgBusy] = createSignal(false);
+  const [cfgMsg, setCfgMsg] = createSignal<string | null>(null);
+  const [cfgErr, setCfgErr] = createSignal<string | null>(null);
 
   const [resetting, setResetting] = createSignal(false);
   const [showResetModal, setShowResetModal] = createSignal(false);
@@ -56,6 +66,51 @@ export default function Settings() {
     if (typeof dir === "string") {
       await setSetting(VAULT_PATH_KEY, dir);
       setVault(dir);
+    }
+  }
+
+  async function exportConfig() {
+    setCfgBusy(true);
+    setCfgMsg(null);
+    setCfgErr(null);
+    try {
+      const path = await save({
+        title: "Exportar configuração",
+        defaultPath: "draw-study-config.json",
+        filters: [{ name: "JSON", extensions: ["json"] }],
+      });
+      if (!path) return; // cancelado
+      await writeTextFile(path, await exportConfigJson());
+      setCfgMsg(`Configuração exportada para ${path}`);
+    } catch (e) {
+      setCfgErr(String(e));
+    } finally {
+      setCfgBusy(false);
+    }
+  }
+
+  async function importConfig() {
+    setCfgBusy(true);
+    setCfgMsg(null);
+    setCfgErr(null);
+    try {
+      const path = await open({
+        title: "Importar configuração",
+        multiple: false,
+        directory: false,
+        filters: [{ name: "JSON", extensions: ["json"] }],
+      });
+      if (typeof path !== "string") return; // cancelado
+      const json = await readTextFile(path);
+      const r: ImportResult = await importConfigJson(json);
+      setCfgMsg(
+        `Importado: ${r.plans} planos · ${r.slots} horários · ` +
+          `${r.collections} coleções · ${r.notes} notas.`,
+      );
+    } catch (e) {
+      setCfgErr(String(e));
+    } finally {
+      setCfgBusy(false);
     }
   }
 
@@ -186,6 +241,47 @@ export default function Settings() {
             Testar
           </button>
         </div>
+      </section>
+
+      <section class="mt-8 max-w-2xl border-t border-line pt-6">
+        <h2 class="text-sm font-medium text-ink">
+          Backup de configuração
+        </h2>
+        <p class="mt-1 text-sm text-muted">
+          Exporta planos + horários, coleções e notas para um arquivo{" "}
+          <code class="rounded bg-bg px-1 py-0.5 text-xs">.json</code> (backup ou
+          transferir p/ outra máquina). Importar sempre{" "}
+          <strong class="text-ink">adiciona</strong> como novo — nunca apaga nem
+          sobrescreve o que já existe. Estudos e o caminho do vault não entram.
+        </p>
+        <div class="mt-3 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={exportConfig}
+            disabled={cfgBusy()}
+            class="rounded-md border border-line px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface2 disabled:opacity-50"
+          >
+            Exportar…
+          </button>
+          <button
+            type="button"
+            onClick={importConfig}
+            disabled={cfgBusy()}
+            class="rounded-md border border-line px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface2 disabled:opacity-50"
+          >
+            Importar…
+          </button>
+        </div>
+        <Show when={cfgMsg()}>
+          <p class="mt-2 rounded-md bg-accent-500/10 px-3 py-2 text-sm text-accent-300">
+            {cfgMsg()}
+          </p>
+        </Show>
+        <Show when={cfgErr()}>
+          <p class="mt-2 rounded-md bg-red-500/10 px-3 py-2 text-sm text-red-300">
+            {cfgErr()}
+          </p>
+        </Show>
       </section>
 
       <section class="mt-8 max-w-2xl border-t border-red-500/30 pt-6">
