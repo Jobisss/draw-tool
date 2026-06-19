@@ -487,6 +487,60 @@ Backlog v1 (se voltar): file-watch, multi-vault, FTS5, render `.clip`, toggle cl
 - Feito: atualização do título padrão do aplicativo para `draw-study` em `index.html`.
 - Verificado: `npm run build` passa (typecheck verde).
 
+### 2026-06-17 — v2 PDFs + Timeline "Livro" (flipbook)
+- **PDFs (visualização):** scan/import já aceitavam `pdf`; faltava ver. Add `pdfjs-dist` (6.0,
+  pure-JS, sem dep nativa — pdfium continua fora). `lib/pdf.ts` (`openPdf` via `convertFileSrc`+
+  worker `?url`, `renderPage`→canvas). `components/PdfThumb.tsx` (1ª página lazy via
+  IntersectionObserver) usado na `Gallery` quando `format=pdf` sem thumb. `components/PdfViewer.tsx`
+  (canvas paginado, prev/próxima + setas teclado + contador) no `StudyDetail` quando `format=pdf`.
+- **Timeline "Livro":** add `page-flip` (2.0). `components/FlipBook.tsx` — virada de página realista,
+  capa "Evolução" + contracapa, cada estudo = 1 página (imagem + título + data), clique → detalhe.
+  `Timeline.tsx`: toggle **Galeria | 📖 Livro**; no Livro os estudos vão em ordem **crescente**
+  (antigo→recente p/ ver evolução); FlipBook keyed (remonta ao trocar filtro).
+- Verificado: `npm run build` OK (typecheck verde; worker pdf emitido como chunk separado 1.2MB,
+  index.js 772kB c/ pdfjs — warning de tamanho só). Sem mudança em Rust (cargo inalterado).
+  **Validação GUI pendente do usuário** (importar um PDF; abrir; Timeline→Livro folheando).
+- Decisões: pdf.js (não pdfium) — zero dep nativa, render canvas serve thumb+viewer+evolução;
+  asset protocol (CSP null) deixa pdf.js buscar o arquivo direto; livro single-page (`usePortrait`)
+  p/ robustez. Bundle cresceu (~pdfjs) — aceitável p/ desktop; lazy-import fica no backlog se incomodar.
+
+### 2026-06-17 — v2 Fix PDF no Lightbox + Refatoração do modelo (feedback)
+- **PDF no Lightbox:** o visualizador da Biblioteca (Lightbox, com zoom/cinza/grid) não tratava PDF
+  → "Visualização direta indisponível". Agora `format=pdf` → `<PdfViewer>` (paginado) dentro do
+  Lightbox. (Detalhe `/biblioteca/:id` já tinha sido coberto antes.)
+- **Decisões de modelo (perguntas ao usuário):**
+  1. Import deixa de exigir plano → **plano opcional + pasta destino livre**. `DropZone`: select ganha
+     "(sem plano)"; sem plano → botão "Escolher pasta…" (dialog directory, default=vault) → `import_study`
+     (guarda Rust já valida dentro do vault).
+  2. **Tags removidas** (Coleções continuam como único agrupador). Apagado `lib/tags.ts`; removidos
+     editor de tags do `StudyDetail`, filtro de tag da `Timeline`, casamento por tag na busca da
+     Biblioteca (`studies.ts`).
+  3. **Timeline e Painel passam a usar Plano** no lugar de "técnica" (que era tag). Novo
+     `lib/planMatch.ts`: associa estudo→plano **pela pasta** (`study.path` sob `plan.folder_path`,
+     mais específico vence). `studiesByPlan`/`studiesByPlanRange`. Timeline filtra por plano via pasta;
+     Painel "Estudos por plano"; Relatório "Por plano".
+  4. **Plano = curso** (unificado, sem split Curso/Plano).
+- Verificado: `npm run build` OK (typecheck verde; grep confirma zero refs órfãs a tag/técnica).
+  Sem mudança em Rust. **Validação GUI pendente:** abrir PDF no Lightbox; importar sem plano;
+  Timeline/Painel/Relatório por plano.
+- Pendência menor: botões Cinza/Grid/espelhar do Lightbox aparecem em PDF mas não afetam (aplicam só
+  a imagem) — esconder se incomodar. Tabelas `tag`/`study_tag` ficam no DB sem uso (sem migration de drop).
+
+### 2026-06-19 — v2 Export/Import de configuração
+- Feito: backup/transferência de config. `lib/config.ts` — `buildConfig`/`exportConfigJson`
+  (serializa planos+slots, coleções [nomes], notas [título+corpo] em JSON v1; NÃO inclui estudos,
+  settings nem `folder_path` dos planos — caminho é local) e `importConfigJson` (sempre ADICIONA:
+  planos/notas viram entradas novas, coleções de nome existente puladas [name UNIQUE]; re-sincroniza
+  `note_link` das notas importadas via `updateNote`). Rust: command `write_text_file(path, contents)`
+  em `vault.rs` (caminho livre, fora do vault) + registro no `lib.rs`. `api.ts` `writeTextFile`.
+  Settings.tsx: seção "Backup de configuração" com Exportar… (dialog save → JSON) e Importar…
+  (dialog open → lê → insere, mostra contagens). `capabilities`: `dialog:allow-save`.
+- Verificado: `npm run build` OK (typecheck verde); `cargo check` OK (exit 0). Validação GUI pendente
+  do usuário (exportar → resetar/outra máquina → importar → confere planos/horários/coleções/notas).
+- Decisões: conflito = sempre adicionar novo (escolha do usuário, não-destrutivo); sem settings no
+  export (vault_path/lembrete são por-máquina); folder_path omitido (recriar pasta pós-import pelo
+  botão "Criar pasta"); escrita do .json via Rust (AGENTS: FS via Rust), arquivo fora do vault.
+
 ## Template de entrada (copiar p/ cada fase)
 ```
 ### AAAA-MM-DD — Fase X: <nome>
